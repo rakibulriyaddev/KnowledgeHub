@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 interface ModalProps {
   open: boolean;
@@ -13,8 +14,14 @@ interface ModalProps {
 
 /**
  * Centered modal dialog shell. Locks body scroll, closes on Escape and backdrop
- * click. Mirrors the chrome conventions in MobileDrawer. The owner controls
- * `open`, so the modal can outlive the trigger that opened it.
+ * click. The owner controls `open`, so the modal can outlive the trigger.
+ *
+ * Rendered through a portal into `document.body`: the navbar (a common trigger
+ * site) sets `backdrop-filter`, which makes it a containing block for
+ * `position: fixed` descendants — a modal nested under it would anchor to the
+ * 64px header instead of the viewport and ride up to the top. Portaling to the
+ * body escapes that so `fixed inset-0` resolves against the viewport and the
+ * card centers correctly.
  */
 export default function Modal({ open, onClose, title, children, size = "md" }: ModalProps) {
   useEffect(() => {
@@ -31,11 +38,11 @@ export default function Modal({ open, onClose, title, children, size = "md" }: M
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4"
       role="dialog"
       aria-modal="true"
       aria-label={title}
@@ -46,7 +53,7 @@ export default function Modal({ open, onClose, title, children, size = "md" }: M
         onClick={onClose}
       />
       <div
-        className={`relative z-10 mt-16 w-full rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl dark:border-neutral-800 dark:bg-neutral-900 sm:mt-0 ${
+        className={`relative z-10 my-auto w-full rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl dark:border-neutral-800 dark:bg-neutral-900 ${
           size === "lg" ? "max-w-lg" : "max-w-md"
         }`}
       >
@@ -74,6 +81,7 @@ export default function Modal({ open, onClose, title, children, size = "md" }: M
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

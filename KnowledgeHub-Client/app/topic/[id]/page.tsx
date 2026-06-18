@@ -14,11 +14,17 @@ import TopicSidebar, { type TopicTree, type TreeRef } from "@/components/TopicSi
 
 type TopicParams = { params: Promise<{ id: string }> };
 
-// Pure SSG: only vault folders known at build time exist; anything else 404s.
-// Must be a static literal (Turbopack parses it at compile time). A topic
-// created during `next dev` is still reachable immediately because dev re-runs
-// generateStaticParams on navigation, so the new folder is in the known set.
-export const dynamicParams = false;
+// Must be a static boolean literal — Turbopack parses this at compile time and
+// rejects any expression (e.g. a `process.env`-based ternary).
+//
+// `true` so a topic created mid-session via in-app authoring renders on demand
+// instead of 404-ing: its folder isn't in the build-time param set, and `true`
+// means "generate params not listed by generateStaticParams at request time."
+// In production every existing topic is still enumerated below and prerendered
+// as static HTML; `true` only changes a *non-existent* path, which renders on
+// demand and resolves to notFound() (getTopicView reads the FS, returns null) —
+// a clean 404 either way. Authoring is off in production, so no new paths appear.
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const folders = await listTopicFolders();

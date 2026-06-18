@@ -153,11 +153,7 @@ function Hint({ state, slug }: { state: AvailState; slug: string }) {
     case "checking":
       return <span className="text-neutral-500 dark:text-neutral-400">Checking “{slug}”…</span>;
     case "available":
-      return (
-        <span className="font-medium text-green-600 dark:text-green-400">
-          ✓ Available — will create <code className="font-mono">/topic/{slug}</code>
-        </span>
-      );
+      return <span className="font-medium text-green-600 dark:text-green-400">✓ Available</span>;
     case "taken":
       return (
         <span className="font-medium text-red-600 dark:text-red-400">
