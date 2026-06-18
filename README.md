@@ -1,9 +1,11 @@
 # KnowledgeHub
 
+> **Live →** [riyad-knowledge-hub.vercel.app](https://riyad-knowledge-hub.vercel.app)
+
 A web client that renders and navigates **KnowledgeVault** — a folder of
 interconnected Markdown notes linked by frontmatter. Built with Next.js 16
 (App Router), Tailwind CSS v4, and Shiki-powered syntax highlighting.
-Mobile-first, dark-mode, and deployable to Vercel.
+Mobile-first, dark-mode.
 
 This is a single-repo **monorepo**: the content (`KnowledgeVault/`) and the web
 app (`KnowledgeHub-Client/`) live side by side. The client reads the vault from
@@ -15,6 +17,8 @@ no database, no API, no runtime fetching.
 ```
 KnowledgeHub/
 ├── KnowledgeVault/         # Markdown content (the knowledge base)
+│   ├── CLAUDE.md           # Authoring conventions and frontmatter rules
+│   ├── README.md           # Vault overview and quick-start
 │   ├── programming/
 │   │   └── _index.md
 │   ├── javascript/
@@ -22,19 +26,27 @@ KnowledgeHub/
 │   │   ├── qa.md
 │   │   └── resources.md
 │   └── ...                 # one folder per topic, flat at the root
-└── KnowledgeHub-Client/    # Next.js web app (this is what you deploy)
-    ├── app/                # routes: / (home) and /topic/[id]
-    ├── components/         # Navbar, SearchBar, MarkdownViewer, ...
-    ├── lib/                # vault (fs reads), search index, markdown config
-    ├── scripts/            # build-search-index.ts
-    └── public/             # search-index.json (generated)
+├── KnowledgeHub-Client/    # Next.js web app (this is what you deploy)
+│   ├── app/                # routes: / (home) and /topic/[id]
+│   ├── components/         # Navbar, SearchBar, MarkdownViewer, ...
+│   ├── lib/                # vault (fs reads), search index, markdown config
+│   ├── scripts/            # build-search-index.ts
+│   └── public/             # search-index.json (generated)
+└── .claude/
+    └── commands/
+        └── add-topic.md    # /add-topic slash command (Claude Code)
 ```
 
 ## KnowledgeVault structure
 
 Each topic is a folder at the **root** of `KnowledgeVault/`. Hierarchy comes
 from frontmatter, not nesting. A folder becomes a topic when it contains an
-`_index.md`:
+`_index.md`.
+
+All naming rules, required frontmatter fields, bidirectionality requirements,
+tag conventions, and content standards are documented in
+[`KnowledgeVault/CLAUDE.md`](KnowledgeVault/CLAUDE.md). See also
+[`KnowledgeVault/README.md`](KnowledgeVault/README.md) for a vault overview.
 
 ```yaml
 ---
@@ -119,6 +131,22 @@ deployed site stays read-only. This is by design: writing files and running
 machine. On Vercel the filesystem is read-only and there's no git, so the
 authoring UI is hidden there automatically.
 
+### Option A — `/add-topic` slash command (recommended)
+
+Open Claude Code in this repo and run:
+
+```
+/add-topic <topic name>
+```
+
+The command derives the slug, checks for collisions, asks for title / parent /
+children / tags in one step, writes a complete `_index.md` with real content,
+and automatically maintains parent–child bidirectionality. See
+[`.claude/commands/add-topic.md`](.claude/commands/add-topic.md) for the full
+workflow.
+
+### Option B — in-app authoring
+
 Run `npm run dev`, then:
 
 1. **Add Knowledge** (navbar) — enter a topic name; a live check shows whether
@@ -135,20 +163,12 @@ Run `npm run dev`, then:
    otherwise, so content never lands on the wrong branch. Switch once with
    `git switch development` (or `git switch -c development`) and stay there.
 
+> **Note:** the in-app flow does not fill in `parent`, `children`, or `tags`
+> automatically. Edit the generated `_index.md` by hand, or use `/add-topic`
+> instead.
+
 Authoring is gated by `isAuthoringEnabled()` (on in `next dev`, off in
 production). Set `KNOWLEDGEHUB_PUBLISH_BRANCH` to publish to a different branch.
-
-## Deploying to Vercel
-
-1. Import the repository.
-2. Set **Root Directory** to `KnowledgeHub-Client` and keep **"Include files
-   outside the root directory in the build step"** enabled (the default) so the
-   build can read `../KnowledgeVault`.
-3. Framework preset: Next.js. Build command stays `next build` (the `prebuild`
-   index script runs automatically). No environment variables are required.
-
-Because everything is read at build time and baked into the static output, no
-runtime filesystem access to the vault is needed.
 
 ## Tech stack
 
