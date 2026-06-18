@@ -2,10 +2,10 @@
 id: programming
 title: Programming
 created: 2026-05-01
-modified: 2026-05-10
+modified: 2026-06-18
 tags: [programming, fundamentals, computer-science]
 parent: null
-children: [javascript]
+children: [javascript, dotnet]
 ---
 
 # Programming
