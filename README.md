@@ -84,12 +84,14 @@ Other scripts:
 
 ### Environment
 
-| Variable    | Default             | Purpose                                               |
-| ----------- | ------------------- | ----------------------------------------------------- |
-| `VAULT_DIR` | `../KnowledgeVault` | Path to the vault folder, relative to the client app. |
+| Variable                 | Default             | Purpose                                                          |
+| ------------------------ | ------------------- | ---------------------------------------------------------------- |
+| `VAULT_DIR`              | `../KnowledgeVault` | Path to the vault folder, relative to the client app.            |
+| `KNOWLEDGEHUB_AUTHORING` | on in dev, off prod | Force in-app authoring on outside `next dev` (see below).        |
+| `KNOWLEDGEHUB_PUBLISH_BRANCH` | `development`  | Branch that **Save** commits + pushes to (see below).            |
 
-Copy `.env.example` to `.env.local` only if your vault lives somewhere other
-than the sibling folder.
+Copy `.env.example` to `.env.local` to set any of these. None are required just
+to browse the vault.
 
 ## How it works
 
@@ -107,7 +109,34 @@ than the sibling folder.
 - **Inline switching:** a topic's `_index.md` and every sibling are all rendered
   at build time and toggled by a small client component — instant, no reload.
 - Content changes ship via a normal rebuild/redeploy (pure SSG; the app never
-  reads the vault at runtime).
+  reads the vault at runtime in production).
+
+## Authoring content (local)
+
+You can create and edit content **in the app while running it locally** — the
+deployed site stays read-only. This is by design: writing files and running
+`git` need a writable disk and your git credentials, which only exist on your
+machine. On Vercel the filesystem is read-only and there's no git, so the
+authoring UI is hidden there automatically.
+
+Run `npm run dev`, then:
+
+1. **Add Knowledge** (navbar) — enter a topic name; a live check shows whether
+   the id is free (GitHub-repo style). Create it and you land on the new topic,
+   scaffolded from a default `_index.md`.
+2. **Add file / Edit** (on a topic) — add a sibling Markdown file, or edit any
+   file in a textarea with a **live preview** beside it.
+3. **Save** — give a non-empty commit message. KnowledgeHub writes the file,
+   then stages, commits, and pushes **all pending vault changes** (scoped to
+   `KnowledgeVault/` only) to the **`development`** branch. Creating topics/files
+   is a *temporary* local change until you Save.
+4. A confirmation toast reports the result (e.g. *Pushed to development*). You
+   must be on the `development` branch to publish — KnowledgeHub refuses
+   otherwise, so content never lands on the wrong branch. Switch once with
+   `git switch development` (or `git switch -c development`) and stay there.
+
+Authoring is gated by `isAuthoringEnabled()` (on in `next dev`, off in
+production). Set `KNOWLEDGEHUB_PUBLISH_BRANCH` to publish to a different branch.
 
 ## Deploying to Vercel
 
@@ -130,7 +159,7 @@ Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 
 ## Notes
 
 - The vault is the single source of truth — no database, no auth (content is public).
-- Editing content from the UI is out of scope (a planned future feature); edit
-  the Markdown files in `KnowledgeVault/` directly for now.
+- In-app authoring is **local-only** (see above); the deployed site is read-only.
+  You can always edit the Markdown in `KnowledgeVault/` by hand instead.
 - `Explore` and `About` are placeholder pages; tag chips are styled but not yet
   filterable.

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
 import MobileNav, { type NavLink } from "./MobileNav";
+import AddTopicButton from "./authoring/AddTopicButton";
+import { isAuthoringEnabled } from "@/lib/authoring";
 
 const NAV_LINKS: NavLink[] = [
   { href: "/", label: "Home" },
@@ -9,6 +11,8 @@ const NAV_LINKS: NavLink[] = [
 ];
 
 export default function Navbar() {
+  const authoring = isAuthoringEnabled();
+
   return (
     <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/80 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/80">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
@@ -47,12 +51,18 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          {authoring && (
+            <div className="ml-1">
+              <AddTopicButton variant="primary" />
+            </div>
+          )}
           <div className="ml-1">
             <ThemeToggle />
           </div>
         </nav>
 
         <div className="flex items-center gap-1 md:hidden">
+          {authoring && <AddTopicButton variant="icon" />}
           <ThemeToggle />
           <MobileNav links={NAV_LINKS} />
         </div>
