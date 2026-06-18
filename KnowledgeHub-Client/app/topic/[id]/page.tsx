@@ -6,6 +6,7 @@ import {
   listTopicFolders,
 } from "@/lib/vault";
 import { getSearchIndex } from "@/lib/search-index";
+import { isAuthoringEnabled } from "@/lib/authoring";
 import MarkdownViewer from "@/components/MarkdownViewer";
 import MetadataHeader from "@/components/MetadataHeader";
 import TopicView, { type TopicPanel } from "@/components/TopicView";
@@ -13,8 +14,10 @@ import TopicSidebar, { type TopicTree, type TreeRef } from "@/components/TopicSi
 
 type TopicParams = { params: Promise<{ id: string }> };
 
-// Pure SSG: only vault folders known at build time exist; anything else 404s
-// (no runtime filesystem access).
+// Pure SSG: only vault folders known at build time exist; anything else 404s.
+// Must be a static literal (Turbopack parses it at compile time). A topic
+// created during `next dev` is still reachable immediately because dev re-runs
+// generateStaticParams on navigation, so the new folder is in the known set.
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
@@ -59,11 +62,12 @@ export default async function TopicPage({ params }: TopicParams) {
   };
 
   // Render every panel server-side (Shiki runs at build); the client island
-  // just toggles which is visible.
+  // just toggles which is visible. `source` carries the raw file for editing.
   const renderedPanels: TopicPanel[] = panels.map((panel) => ({
     name: panel.name,
     label: panel.label,
     content: <MarkdownViewer>{panel.body}</MarkdownViewer>,
+    source: panel.raw,
   }));
 
   return (
@@ -71,7 +75,11 @@ export default async function TopicPage({ params }: TopicParams) {
       <TopicSidebar tree={tree} />
       <div className="min-w-0">
         <MetadataHeader frontmatter={node.frontmatter} />
-        <TopicView panels={renderedPanels} />
+        <TopicView
+          panels={renderedPanels}
+          topicId={node.id}
+          editable={isAuthoringEnabled()}
+        />
       </div>
     </div>
   );

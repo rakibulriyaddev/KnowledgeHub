@@ -48,6 +48,8 @@ export interface Panel {
   label: string;
   /** Markdown body to render (frontmatter stripped). */
   body: string;
+  /** Full raw file contents incl. frontmatter — what the editor edits. */
+  raw: string;
 }
 
 export interface TopicView {
@@ -65,7 +67,7 @@ export function getVaultDir(): string {
 }
 
 /** Reject anything that isn't a single, safe path segment (no traversal). */
-function isSafeSegment(segment: string): boolean {
+export function isSafeSegment(segment: string): boolean {
   return (
     segment.length > 0 &&
     !segment.includes("/") &&
@@ -214,6 +216,29 @@ export async function getNode(id: string): Promise<VaultNode | null> {
   };
 }
 
+/** True if a folder with this id already exists in the vault (i.e. name taken). */
+export async function topicExists(id: string): Promise<boolean> {
+  if (!isSafeSegment(id)) return false;
+  try {
+    const stat = await fs.stat(path.join(getVaultDir(), id));
+    return stat.isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Read a file's full raw contents (frontmatter + body) from a topic folder.
+ * Used by the editor, which edits the whole file. Returns null if absent or the
+ * path is unsafe.
+ */
+export async function readRawFile(id: string, name: string): Promise<string | null> {
+  if (!isSafeSegment(id) || !isSafeSegment(name) || !name.toLowerCase().endsWith(".md")) {
+    return null;
+  }
+  return readFileSafe(path.join(getVaultDir(), id, name));
+}
+
 /** Read and parse every topic node in the vault (used by the build script). */
 export async function getAllNodes(): Promise<VaultNode[]> {
   const folders = await listTopicFolders();
@@ -243,16 +268,21 @@ export async function getTopicView(id: string): Promise<TopicView | null> {
   const node = await getNode(id);
   if (!node) return null;
 
-  const panels: Panel[] = [{ name: "_index.md", label: "Overview", body: node.body }];
+  const dir = path.join(getVaultDir(), id);
+  // Reconstruct the full _index.md so the editor has frontmatter + body.
+  const indexRaw = (await readFileSafe(path.join(dir, "_index.md"))) ?? node.body;
+  const panels: Panel[] = [
+    { name: "_index.md", label: "Overview", body: node.body, raw: indexRaw },
+  ];
   for (const sibling of node.siblings) {
-    const raw = await readFileSafe(path.join(getVaultDir(), id, sibling));
+    const raw = await readFileSafe(path.join(dir, sibling));
     if (raw === null) continue;
     const { data, content } = safeMatter(raw);
     const label =
       typeof data.title === "string" && data.title.trim()
         ? data.title.trim()
         : humanizeFilename(sibling);
-    panels.push({ name: sibling, label, body: content });
+    panels.push({ name: sibling, label, body: content, raw });
   }
 
   return { node, panels };

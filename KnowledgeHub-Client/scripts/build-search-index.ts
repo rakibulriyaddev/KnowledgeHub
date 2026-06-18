@@ -1,6 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { getAllNodes, toIndexEntry } from "../lib/vault";
+import { writeSearchIndex } from "../lib/search-index";
 
 /**
  * Build-time generator for public/search-index.json.
@@ -8,23 +6,13 @@ import { getAllNodes, toIndexEntry } from "../lib/vault";
  * Runs via the `prebuild` / `predev` npm hooks (and `npm run index`). Reads the
  * local KnowledgeVault and writes a compact, metadata-only index that the
  * client loads for fuzzy search. A missing/empty vault yields `[]` — the build
- * still succeeds (graceful empty state).
+ * still succeeds (graceful empty state). The actual work lives in
+ * `writeSearchIndex()` so the authoring actions can reuse it after a mutation.
  */
 async function main(): Promise<void> {
-  const nodes = await getAllNodes();
-  const index = nodes
-    .map(toIndexEntry)
-    .sort((a, b) => a.id.localeCompare(b.id));
-
-  const outPath = path.resolve(process.cwd(), "public", "search-index.json");
-  await fs.mkdir(path.dirname(outPath), { recursive: true });
-  await fs.writeFile(outPath, `${JSON.stringify(index, null, 2)}\n`, "utf8");
-
+  const count = await writeSearchIndex();
   console.log(
-    `[search-index] wrote ${index.length} entr${index.length === 1 ? "y" : "ies"} -> ${path.relative(
-      process.cwd(),
-      outPath,
-    )}`,
+    `[search-index] wrote ${count} entr${count === 1 ? "y" : "ies"} -> public/search-index.json`,
   );
 }
 
