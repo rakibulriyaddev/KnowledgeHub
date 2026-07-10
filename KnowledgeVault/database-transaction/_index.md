@@ -2,10 +2,10 @@
 id: database-transaction
 title: "Database Transaction"
 created: 2026-07-10
-modified: 2026-07-10
+modified: 2026-07-11
 tags: [data, storage, acid]
 parent: database
-children: [isolation-levels, mvcc]
+children: [isolation-levels, mvcc, acid]
 ---
 
 # Database Transaction

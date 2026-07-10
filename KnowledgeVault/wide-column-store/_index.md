@@ -2,10 +2,10 @@
 id: wide-column-store
 title: "Wide-Column Store"
 created: 2026-07-10
-modified: 2026-07-10
+modified: 2026-07-11
 tags: [data, storage, nosql]
 parent: unstructured-database
-children: []
+children: [cassandra]
 ---
 
 # Wide-Column Store

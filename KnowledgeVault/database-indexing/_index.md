@@ -2,10 +2,10 @@
 id: database-indexing
 title: "Database Indexing"
 created: 2026-07-10
-modified: 2026-07-10
+modified: 2026-07-11
 tags: [data, storage, performance]
 parent: database
-children: [query-execution-plan, b-tree-index, composite-index, covering-index]
+children: [query-execution-plan, b-tree-index, composite-index, covering-index, lsm-tree]
 ---
 
 # Database Indexing

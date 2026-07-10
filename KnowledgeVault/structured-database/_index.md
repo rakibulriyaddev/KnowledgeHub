@@ -2,10 +2,10 @@
 id: structured-database
 title: "Structured Database"
 created: 2026-07-10
-modified: 2026-07-10
+modified: 2026-07-11
 tags: [data, storage, sql]
 parent: database
-children: []
+children: [normalization, postgresql, mysql]
 ---
 
 # Structured Database

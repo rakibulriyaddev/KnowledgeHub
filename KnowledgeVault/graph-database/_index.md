@@ -2,10 +2,10 @@
 id: graph-database
 title: "Graph Database"
 created: 2026-07-10
-modified: 2026-07-10
+modified: 2026-07-11
 tags: [data, storage, nosql]
 parent: unstructured-database
-children: []
+children: [neo4j]
 ---
 
 # Graph Database

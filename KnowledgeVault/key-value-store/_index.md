@@ -2,10 +2,10 @@
 id: key-value-store
 title: "Key-Value Store"
 created: 2026-07-10
-modified: 2026-07-10
+modified: 2026-07-11
 tags: [data, storage, nosql]
 parent: unstructured-database
-children: []
+children: [redis]
 ---
 
 # Key-Value Store
