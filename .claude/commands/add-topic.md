@@ -4,9 +4,12 @@ The user's input (topic name) is: $ARGUMENTS
 
 ---
 
-## Your job
+## Core principles (read first — they govern every step)
 
-Follow each step in order. Do not skip steps. Be interactive — confirm with the user before writing any files.
+1. **One request = one topic.** Add exactly the topic the user named — never silently create extra topics, sub-topics, or "helpful" siblings. A single topic cannot and should not cover everything.
+2. **High-level, architect's altitude.** The topic body is an *overview*: what it is, why it exists, where it fits, its key concepts. Depth belongs in future child topics. If you feel the urge to go deep on a sub-area, that's a signal it should be a suggested child topic, not more paragraphs.
+3. **Coverage through the tree, not the page.** Completeness comes from suggesting the right child/sibling topics at the end (Step 8), so the vault grows one well-scoped node at a time.
+4. **Interactive.** Confirm with the user before writing any files.
 
 ---
 
@@ -19,6 +22,8 @@ If `$ARGUMENTS` is empty, ask the user:
 > What topic would you like to add?
 
 Wait for their answer, then proceed to Step 2.
+
+**Scope check:** if the input names more than one topic (e.g. "React hooks and context"), tell the user each must be its own topic, ask which ONE to add now, and note the others as candidates for Step 8.
 
 ---
 
@@ -79,11 +84,13 @@ Reply with your choices, e.g.:
 
 **Parent suggestion logic**:
 - If the slug starts with an existing topic id (e.g. `javascript-promises` → slug starts with `javascript`), propose that id as parent.
+- Otherwise, if the topic is conceptually a sub-area of an existing topic (judge from titles), propose that id.
 - Otherwise propose `none`.
 - Read the proposed parent's `_index.md` to get its tags before generating tag suggestions.
 
 **Children suggestion logic**:
 - Scan existing topics whose `parent` field is `null` or whose id starts with `<slug>-` — these are orphan candidates. List them as suggestions if any exist; otherwise default to `none`.
+- Only link *existing* topics as children. Never create new child topics in this run — missing children go to Step 8 suggestions.
 
 **Tag suggestion logic**:
 - Inherit tags from the chosen parent that still apply to this topic.
@@ -111,18 +118,45 @@ created: <today YYYY-MM-DD>
 modified: <today YYYY-MM-DD>
 tags: [<confirmed tags>]
 parent: <confirmed parent id, or null>
-children: []
+children: [<confirmed child ids, or empty>]
 ---
 ```
 
-**Body** — write a genuine, high-quality overview following the content standard in `CLAUDE.md`:
-- 100–250 words
-- Brief overview paragraph (what it is, why it matters)
-- Key concepts list (3–6 bullet points)
-- Minimal code example if the topic has syntax (one focused snippet)
-- No filler, no padding — every sentence must add value
+**Body** — write a genuine, high-quality *overview* following the content standard in `CLAUDE.md` and the altitude rule below. The page is **section-wise**: use the fixed `##` sections below, in this order. Target reader: a 10+ year senior software engineer — assume fundamentals, focus on what actually matters at that level. Core information only, no deep explanations.
 
-Base the content on real, accurate knowledge of the topic. Do not write placeholder text.
+```markdown
+## Overview
+<2–3 sentences: what it is, why it exists, where it fits in the bigger picture>
+
+## Key Concepts
+<3–6 bullets, one line each — name the major sub-areas, breadth over depth>
+
+## Core Knowledge
+<the complete set of things a software engineer must know about THIS
+ topic — cover everything essential, one line per point: tradeoffs,
+ gotchas, failure modes, design decisions, when to use vs when not to.
+ Completeness over brevity here, but still one-liners — 5–8 bullets>
+
+## Interview Questions
+<3–5 questions commonly asked about EXACTLY this topic — not its
+ children, not the broader area. Each question followed by a concise
+ 1–2 line answer:
+ **Q:** <question>
+ **A:** <short, correct answer>>
+
+## Scenario
+<one simple, realistic problem scenario (2–3 sentences) and how this
+ topic solves it (2–3 sentences) — a concrete "you'd reach for this
+ when…" story, in plain prose, NO code>
+```
+
+Rules:
+- Total body ~250–450 words. Every line must add value — no filler.
+- **Topic-exact rule:** Core Knowledge and Interview Questions must be about *this* topic specifically. If a point or question really belongs to a sub-topic, leave it out and carry it to Step 8.
+- **Altitude rule:** every bullet is *one line*, not a paragraph. If a concept, gotcha, or interview answer needs more than a sentence, it deserves its own topic — keep the one-liner here and carry it forward to Step 8.
+- **No code snippets by default.** Add a code example ONLY if the user explicitly asks for one (e.g. "add code example" / "with syntax"); then append it as a final `## Example` section. The Scenario section is always prose.
+- Omit a section only if genuinely inapplicable; never pad to fill one.
+- Base the content on real, accurate knowledge. No placeholder text.
 
 ---
 
@@ -143,13 +177,9 @@ For every id the user listed in Children:
 3. Set its `modified` to today.
 4. Write it back — preserve everything else exactly.
 
-Also update Step 5's frontmatter: the `children:` line should list the user-confirmed child ids instead of `[]`.
-
 ---
 
-## Step 7 — Done
-
-Report what was created:
+## Step 7 — Report what was created
 
 ```
 Done! Created topic "<title>" at KnowledgeVault/<slug>/
@@ -161,3 +191,35 @@ Done! Created topic "<title>" at KnowledgeVault/<slug>/
 To publish: open the app (npm run dev in KnowledgeHub-Client), make any
 edits you want, then click Save and enter a commit message.
 ```
+
+---
+
+## Step 8 — Gap analysis: suggest what's missing & what to add next
+
+After reporting, always do a short coverage analysis. Think like an architect reviewing the knowledge tree:
+
+1. **Missing children** — the major sub-areas of this topic (the one-liners from Step 5's Key Concepts / Core Knowledge sections, points excluded by the topic-exact rule, plus anything set aside in Step 1's scope check) that do NOT yet exist in the vault.
+2. **Missing siblings / related topics** — topics at the same level that a reader of this topic would naturally look for next (compare against existing topics under the same parent).
+3. **Prerequisites** — foundational topics this one assumes, if absent from the vault.
+
+Present as a prioritized list (most valuable first, 3–7 items max — quality over quantity):
+
+```
+Coverage suggestions for "<title>":
+
+  Missing sub-topics (children of <slug>):
+    1. <candidate-slug>  — <one-line why it matters>
+    2. …
+
+  Related topics worth adding:
+    3. <candidate-slug>  — <one-line why>
+
+  Prerequisites not yet in vault:
+    4. <candidate-slug>  — <one-line why>
+
+  Recommended next: <the single best pick and one-sentence rationale>
+
+Run /add-topic <name> to add any of these.
+```
+
+Skip any empty category. **Do not create these topics yourself** — suggestions only; each one is its own future `/add-topic` run.
