@@ -96,12 +96,12 @@ Violating this rule breaks the tree navigation in the UI.
 
 ## Content Standard
 
-The `_index.md` body (below the frontmatter) should be:
+The `_index.md` body (below the frontmatter) is section-wise — see `.claude/commands/add-topic.md` Step 5 for the full template:
 
-- **100–250 words** — short but complete; no padding
-- **Brief overview paragraph** — what it is and why it matters (2–4 sentences)
-- **Key concepts list** — 3–6 bullet points covering the core ideas
-- **Minimal code example** — one focused snippet when the topic has syntax/code (optional for pure-concept topics)
+- **~250–450 words** — complete but concise; no padding
+- **Sections in order:** Overview, Key Concepts, Core Knowledge, Interview Questions (with answers), Scenario
+- **One line per bullet** — depth belongs in child topics
+- **No code by default** — add an `## Example` section only when explicitly requested
 - No "learn more at X" filler, no repetition of the title
 
 **Good examples in the vault:** `javascript/_index.md`, `javascript-async/_index.md`
@@ -136,4 +136,4 @@ Before saving a topic, verify:
 - [ ] `children` is an array (even if empty)
 - [ ] If `parent` is set, the parent's `_index.md` lists this id in its `children`
 - [ ] `created` ≤ `modified`
-- [ ] Body is 100–250 words with a clear overview
+- [ ] Body is ~250–450 words, section-wise, with a clear overview
