@@ -5,7 +5,7 @@ created: 2026-07-10
 modified: 2026-07-10
 tags: [data, storage]
 parent: null
-children: [structured-database, unstructured-database, database-indexing]
+children: [structured-database, unstructured-database, database-indexing, database-transaction, cap-theorem]
 ---
 
 # Database

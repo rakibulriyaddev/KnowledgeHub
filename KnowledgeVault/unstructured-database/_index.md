@@ -5,7 +5,7 @@ created: 2026-07-10
 modified: 2026-07-10
 tags: [data, storage, nosql]
 parent: database
-children: []
+children: [document-database, key-value-store, wide-column-store, graph-database]
 ---
 
 # Unstructured Database

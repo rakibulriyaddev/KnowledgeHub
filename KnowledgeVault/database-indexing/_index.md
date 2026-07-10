@@ -5,7 +5,7 @@ created: 2026-07-10
 modified: 2026-07-10
 tags: [data, storage, performance]
 parent: database
-children: []
+children: [query-execution-plan, b-tree-index, composite-index, covering-index]
 ---
 
 # Database Indexing
