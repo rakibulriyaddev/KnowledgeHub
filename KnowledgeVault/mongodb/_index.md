@@ -6,6 +6,7 @@ modified: 2026-07-11
 tags: [data, storage, nosql]
 parent: document-database
 children: []
+status: draft
 ---
 
 # MongoDB

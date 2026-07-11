@@ -6,6 +6,7 @@ modified: 2026-07-10
 tags: [database, performance, query]
 parent: database-indexing
 children: [join-strategies, query-statistics]
+status: draft
 ---
 
 # Query Execution Plan

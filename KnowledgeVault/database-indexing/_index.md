@@ -6,6 +6,7 @@ modified: 2026-07-11
 tags: [data, storage, performance]
 parent: database
 children: [query-execution-plan, b-tree-index, composite-index, covering-index, lsm-tree]
+status: draft
 ---
 
 # Database Indexing

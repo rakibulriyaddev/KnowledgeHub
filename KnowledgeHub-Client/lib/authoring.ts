@@ -54,6 +54,7 @@ modified: ${date}
 tags: []
 parent: null
 children: []
+status: draft
 ---
 
 # ${title}

@@ -6,6 +6,7 @@ modified: 2026-07-10
 tags: [database, performance, query]
 parent: query-execution-plan
 children: []
+status: draft
 ---
 
 # Join Strategies

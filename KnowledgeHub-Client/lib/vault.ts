@@ -11,6 +11,8 @@ import matter from "gray-matter";
  * It must never be imported from a Client Component.
  */
 
+export type TopicStatus = "draft" | "complete";
+
 export interface Frontmatter {
   id: string;
   title: string;
@@ -19,6 +21,7 @@ export interface Frontmatter {
   tags: string[];
   parent: string | null;
   children: string[];
+  status: TopicStatus;
 }
 
 export interface VaultNode {
@@ -39,6 +42,7 @@ export interface SearchIndexEntry {
   children: string[];
   created: string | null;
   modified: string | null;
+  status: TopicStatus;
 }
 
 export interface Panel {
@@ -124,6 +128,10 @@ function toParent(value: unknown): string | null {
   return null;
 }
 
+function toStatus(value: unknown): TopicStatus {
+  return value === "complete" ? "complete" : "draft";
+}
+
 export function normalizeFrontmatter(
   data: Record<string, unknown>,
   fallbackId: string,
@@ -142,6 +150,7 @@ export function normalizeFrontmatter(
     tags: toStringArray(data.tags),
     parent: toParent(data.parent),
     children: toStringArray(data.children),
+    status: toStatus(data.status),
   };
 }
 
@@ -257,6 +266,7 @@ export function toIndexEntry(node: VaultNode): SearchIndexEntry {
     children: fm.children,
     created: fm.created,
     modified: fm.modified,
+    status: fm.status,
   };
 }
 

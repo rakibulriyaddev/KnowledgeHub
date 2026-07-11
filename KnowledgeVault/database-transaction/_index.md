@@ -6,6 +6,7 @@ modified: 2026-07-11
 tags: [data, storage, acid]
 parent: database
 children: [isolation-levels, mvcc, acid]
+status: draft
 ---
 
 # Database Transaction

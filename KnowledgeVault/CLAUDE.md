@@ -44,7 +44,7 @@ Before creating a topic, check all existing folder names case-insensitively agai
 
 ---
 
-## Required Frontmatter — All 7 Fields
+## Required Frontmatter — All 8 Fields
 
 Every `_index.md` must have exactly these fields:
 
@@ -57,6 +57,7 @@ modified: 2026-06-18          # YYYY-MM-DD, update on every edit
 tags: [javascript, async]     # array, never null, min 1 tag (see Tag Rules below)
 parent: javascript            # folder id of direct parent, or null for root topics
 children: []                  # array of direct-child folder ids; [] for leaf nodes
+status: draft                 # draft | complete — authoring progress of this topic
 ---
 ```
 
@@ -66,6 +67,18 @@ children: []                  # array of direct-child folder ids; [] for leaf no
 - `tags`: YAML inline array of lowercase-hyphenated strings — never `null`, never omitted
 - `parent`: string id **or** the literal `null`
 - `children`: YAML inline array of string ids — never `null`, never omitted (use `[]`)
+- `status`: string, one of `draft` or `complete` — never omitted
+
+---
+
+## Status Field
+
+Tracks whether a topic's content is finished or still being written.
+
+- `draft` — content is a stub, incomplete, or not yet reviewed
+- `complete` — content is finished and reviewed against the Content Standard below
+
+Set explicitly on every create and edit. Default for new topics is `draft`; flip to `complete` only when the body genuinely meets the Content Standard.
 
 ---
 
@@ -130,10 +143,11 @@ Before saving a topic, verify:
 
 - [ ] Folder name is lowercase kebab-case
 - [ ] `id` in frontmatter equals the folder name exactly
-- [ ] All 7 frontmatter fields are present
+- [ ] All 8 frontmatter fields are present
 - [ ] `tags` is a non-empty array with no self-referencing tag
 - [ ] `parent` points to a real existing topic id (or is `null`)
 - [ ] `children` is an array (even if empty)
 - [ ] If `parent` is set, the parent's `_index.md` lists this id in its `children`
 - [ ] `created` ≤ `modified`
+- [ ] `status` is present and is `draft` or `complete`
 - [ ] Body is ~250–450 words, section-wise, with a clear overview

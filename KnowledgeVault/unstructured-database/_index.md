@@ -6,6 +6,7 @@ modified: 2026-07-10
 tags: [data, storage, nosql]
 parent: database
 children: [document-database, key-value-store, wide-column-store, graph-database]
+status: draft
 ---
 
 # Unstructured Database

@@ -6,6 +6,7 @@ modified: 2026-07-11
 tags: [data, storage, performance]
 parent: database
 children: []
+status: draft
 ---
 
 # Connection Pooling
