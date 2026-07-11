@@ -4,7 +4,7 @@ title: "SOLID Principles"
 created: 2026-07-11
 modified: 2026-07-11
 tags: [programming, design-pattern, oop]
-parent: null
+parent: oop
 children: [di, single-responsibility-principle, open-closed-principle, liskov-substitution-principle, interface-segregation-principle, dependency-inversion-principle]
 status: draft
 ---
