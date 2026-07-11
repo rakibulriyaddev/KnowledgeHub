@@ -30,7 +30,8 @@ SQL (relational) and NoSQL (document, key-value, wide-column, graph) represent d
 - NoSQL systems buy horizontal scale and modeling flexibility at the cost of needing to know the query patterns upfront — schema flexibility does not mean query flexibility
 - Strong consistency (relational default) versus tunable/eventual consistency (common NoSQL default) is a real tradeoff visible directly in the CAP theorem framing already covered generically
 - Choosing NoSQL doesn't remove the need for data modeling discipline — it moves the discipline from schema design to query-pattern design, done upfront and harder to change later
-- Polyglot persistence is the common real-world outcome: relational for core transactional data, a cache for hot reads, a document store for flexible content, a graph store for relationship-heavy features — all in one system
+- Polyglot persistence is the common real-world outcome: relational for core transactional data, a cache for hot reads, a document store for flexible content, a graph store for relationship-heavy features — all in one system (e.g. Facebook combines MySQL, Cassandra, Memcached, and its TAO graph store)
+- When the shape is genuinely uncertain, hybrid engines like PostgreSQL (relational plus JSONB documents) are a reasonable default starting point rather than committing early to a pure NoSQL store
 - Migrating between the two models later is expensive in both directions — relational-to-NoSQL loses ad hoc query flexibility, NoSQL-to-relational requires retrofitting schema and relationships onto denormalized data
 - "NoSQL scales better" is an oversimplification — modern relational engines (via replication, sharding, connection pooling) scale substantially further than commonly assumed; NoSQL's advantage is scaling with less operational effort for specific access patterns
 

@@ -23,10 +23,13 @@ A database is an organized collection of data stored and accessed electronically
 - **Index** — auxiliary structure that speeds up lookups
 - **Transaction** — group of operations that succeed or fail as one (ACID)
 - **Replication / Sharding** — copying and partitioning data for availability and scale
+- **OLTP vs OLAP** — many small, latency-sensitive transactions (orders, logins) vs few large, read-heavy analytical queries (reporting, BI)
+- **Write-ahead log (WAL)** — changes are logged before being applied, so a crash can replay them instead of losing data
 
 ## Core Knowledge
 
-- Two broad families: structured (SQL, fixed schema) and unstructured/semi-structured (NoSQL: document, key-value, graph) — the choice is a tradeoff, not a fashion
+- Two broad families: structured (SQL, fixed schema) and unstructured/semi-structured (NoSQL: document, key-value, wide-column, graph) — the choice is a tradeoff, not a fashion; specialized families exist too (time-series like InfluxDB, search engines like Elasticsearch, NewSQL like Spanner/CockroachDB combining relational guarantees with horizontal scale)
+- OLTP systems (MySQL, PostgreSQL) optimize for many small concurrent transactions; OLAP systems (Snowflake, BigQuery, Redshift) optimize for large read-heavy analytical scans — mixing the two workloads on one engine hurts both
 - Schema rigidity buys data integrity; schema flexibility buys development velocity
 - Indexes speed reads but slow writes and consume storage — index deliberately, not everywhere
 - Transactions (ACID) protect multi-step operations from partial failure
