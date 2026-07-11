@@ -13,7 +13,7 @@ status: draft
 
 ## Overview
 
-Consistent hashing is a hashing scheme that maps keys to nodes on a ring such that adding or removing a node only remaps a small, bounded fraction of keys, instead of nearly all of them as with plain modulo hashing. It exists because naive `hash(key) % N` remaps almost every key when N changes, making cluster resizing prohibitively disruptive. It underpins sharding and clustering in Redis, Cassandra, DynamoDB, and CDNs.
+Consistent hashing is a hashing scheme, introduced by Karger et al. at MIT in 1997, that maps keys to nodes on a ring such that adding or removing a node only remaps a small, bounded fraction of keys, instead of nearly all of them as with plain modulo hashing. It exists because naive `hash(key) % N` remaps almost every key when N changes, making cluster resizing prohibitively disruptive. It underpins sharding and clustering in Redis, Cassandra, DynamoDB, Memcached (client-side), Akamai's CDN, and Discord's message store.
 
 ## Key Concepts
 
@@ -33,6 +33,7 @@ Consistent hashing is a hashing scheme that maps keys to nodes on a ring such th
 - Choosing too few virtual nodes per physical node causes visible load imbalance; too many increases metadata/lookup overhead — real systems tune this
 - This is the mechanism, not the policy — the actual sharding/routing decision (which key maps to which shard) still needs a real shard key design, same as in generic database-sharding
 - Client-side vs server-side ring awareness matters: some systems (Cassandra) have clients aware of ring topology directly, others hide it behind a coordinator/proxy
+- Alternatives exist: rendezvous (highest-random-weight) hashing is simpler but O(N) per lookup, and Google's Jump Hash / Maglev hashing trade flexibility for speed; a fast non-cryptographic hash (MurmurHash, xxHash) is preferred over MD5/SHA since collision resistance isn't the goal
 
 ## Interview Questions
 

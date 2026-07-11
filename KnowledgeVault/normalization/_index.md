@@ -13,7 +13,7 @@ status: draft
 
 ## Overview
 
-Normalization is the process of organizing relational tables to reduce data duplication and eliminate update anomalies, by splitting data into smaller tables linked by foreign keys. It exists to guarantee a fact is stored once, so updates, inserts, and deletes stay consistent by construction rather than by discipline. Denormalization is the deliberate reversal of this, traded for read performance.
+Normalization is the process of organizing relational tables to reduce data duplication and eliminate update anomalies, by splitting data into smaller tables linked by foreign keys. Proposed by E.F. Codd in the 1970s, it exists to guarantee a fact is stored once, so updates, inserts, and deletes stay consistent by construction rather than by discipline. Denormalization is the deliberate reversal of this, traded for read performance.
 
 ## Key Concepts
 
@@ -34,6 +34,7 @@ Normalization is the process of organizing relational tables to reduce data dupl
 - Over-normalizing a schema that's mostly read, rarely updated, wastes join cost for anomaly protection the workload doesn't need
 - Normalization is a relational-model discipline; NoSQL document/wide-column models embrace denormalization by default for different reasons (no cheap joins)
 - A schema doesn't need to pick one level globally — normalize the write-heavy, integrity-critical core, denormalize specific read-heavy paths deliberately
+- Try cheaper fixes first (indexes, caching, read replicas) before denormalizing; data warehouses (star/snowflake schemas) are the extreme end of deliberate denormalization for analytics
 
 ## Interview Questions
 

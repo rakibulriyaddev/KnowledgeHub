@@ -2,7 +2,7 @@
 id: cap-theorem
 title: "CAP Theorem"
 created: 2026-07-10
-modified: 2026-07-10
+modified: 2026-07-11
 tags: [data, storage, distributed-systems]
 parent: database
 children: []
@@ -31,7 +31,8 @@ CAP theorem states that a distributed data system can guarantee at most two of t
 - AP systems keep answering during a partition but may return stale or conflicting data that must be reconciled later — uptime over immediate correctness
 - Outside of a partition, most systems behave consistently and available simultaneously — CAP tradeoffs only bite when the network actually splits
 - PACELC extends the idea: even with no partition, a system still trades latency for consistency (wait for all replicas vs respond fast from one)
-- The choice is rarely all-or-nothing per database — many systems allow tunable consistency per operation (e.g. quorum reads/writes) rather than a fixed global CP or AP stance
+- The choice is rarely all-or-nothing per database — many systems allow tunable consistency per operation (e.g. Cassandra's ONE/QUORUM/ALL read levels, or DynamoDB's eventually-vs-strongly-consistent reads) rather than a fixed global CP or AP stance
+- Concretely: PostgreSQL/MySQL and ZooKeeper lean CP; Cassandra, DynamoDB, CouchDB, Riak, and even DNS lean AP — DNS is arguably the internet's largest AP system
 - CAP is about behavior under partition, not a marketing label — "NoSQL is AP, SQL is CP" is a rough generalization, not a rule; specific configurations can shift either way
 - Conflict resolution strategy (last-write-wins, vector clocks, application-level merge) is the real design work behind any AP choice — availability without a resolution plan just defers the problem
 
