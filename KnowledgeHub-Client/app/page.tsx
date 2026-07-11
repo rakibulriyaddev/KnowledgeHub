@@ -1,15 +1,10 @@
-import {
-  getSearchIndex,
-  getRecentlyAdded,
-  getRecentlyUpdated,
-} from "@/lib/search-index";
+import { getSearchIndex, getChapters } from "@/lib/search-index";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 
 export default async function HomePage() {
   const index = await getSearchIndex();
-  const recentlyAdded = getRecentlyAdded(index);
-  const recentlyUpdated = getRecentlyUpdated(index);
+  const chapters = getChapters(index);
   const isEmpty = index.length === 0;
 
   return (
@@ -28,7 +23,7 @@ export default async function HomePage() {
       </section>
 
       <div className="grid gap-8 pb-20 md:grid-cols-[18rem_1fr]">
-        <Sidebar recentlyAdded={recentlyAdded} recentlyUpdated={recentlyUpdated} />
+        <Sidebar chapters={chapters} />
 
         <section className="rounded-xl border border-dashed border-neutral-300 p-8 dark:border-neutral-700">
           <h2 className="text-lg font-semibold">Welcome to KnowledgeHub</h2>

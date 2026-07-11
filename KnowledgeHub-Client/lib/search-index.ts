@@ -36,31 +36,9 @@ export async function getSearchIndex(): Promise<SearchIndexEntry[]> {
   }
 }
 
-function sortByDateDesc(
-  entries: SearchIndexEntry[],
-  key: "created" | "modified",
-): SearchIndexEntry[] {
-  return [...entries].sort((a, b) => {
-    const ta = a[key] ? Date.parse(a[key] as string) : Number.NaN;
-    const tb = b[key] ? Date.parse(b[key] as string) : Number.NaN;
-    const va = Number.isNaN(ta) ? -Infinity : ta;
-    const vb = Number.isNaN(tb) ? -Infinity : tb;
-    return vb - va;
-  });
-}
-
-/** Top `limit` nodes by `created` date, newest first. */
-export function getRecentlyAdded(
-  entries: SearchIndexEntry[],
-  limit = 10,
-): SearchIndexEntry[] {
-  return sortByDateDesc(entries, "created").slice(0, limit);
-}
-
-/** Top `limit` nodes by `modified` date, most recent first. */
-export function getRecentlyUpdated(
-  entries: SearchIndexEntry[],
-  limit = 10,
-): SearchIndexEntry[] {
-  return sortByDateDesc(entries, "modified").slice(0, limit);
+/** Top-level topics — entries with no parent — sorted alphabetically by title. */
+export function getChapters(entries: SearchIndexEntry[]): SearchIndexEntry[] {
+  return entries
+    .filter((entry) => !entry.parent)
+    .sort((a, b) => a.title.localeCompare(b.title));
 }
