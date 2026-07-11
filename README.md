@@ -19,12 +19,15 @@ KnowledgeHub/
 ├── KnowledgeVault/         # Markdown content (the knowledge base)
 │   ├── CLAUDE.md           # Authoring conventions and frontmatter rules
 │   ├── README.md           # Vault overview and quick-start
-│   ├── programming/
+│   ├── system-design/
 │   │   └── _index.md
-│   ├── javascript/
-│   │   ├── _index.md
-│   │   ├── qa.md
-│   │   └── resources.md
+│   ├── networking/
+│   │   ├── _index.md       # child of system-design
+│   │   └── ...
+│   ├── tcp/
+│   │   ├── _index.md       # child of networking
+│   │   ├── deep-dive.md
+│   │   └── qa.md
 │   └── ...                 # one folder per topic, flat at the root
 ├── KnowledgeHub-Client/    # Next.js web app (this is what you deploy)
 │   ├── app/                # routes: / (home) and /topic/[id]
@@ -50,16 +53,17 @@ tag conventions, and content standards are documented in
 
 ```yaml
 ---
-id: javascript                 # informational; the folder name is the canonical id/URL
-title: JavaScript
-created: 2026-06-17
-modified: 2026-06-17
-tags: [programming, web, frontend]
-parent: programming            # folder id of the parent topic, or null
-children: [javascript-async, javascript-promises]
+id: tcp                         # informational; the folder name is the canonical id/URL
+title: "TCP (Transmission Control Protocol)"
+created: 2026-07-11
+modified: 2026-07-11
+tags: [protocols, transport-layer, networking-fundamentals]
+parent: networking              # folder id of the parent topic, or null
+children: []
+status: draft                   # draft | complete
 ---
 
-# JavaScript
+# TCP
 
 Markdown body here. Fenced code blocks are syntax-highlighted, and GitHub
 Flavored Markdown (tables, task lists, ...) is supported.
@@ -72,7 +76,7 @@ switcher label (otherwise the filename is humanized).
 
 Routes:
 
-- `/` — home: search bar + "Recently Added" / "Recently Updated"
+- `/` — home: search bar + Chapters (topics grouped by section)
 - `/topic/<folder-name>` — topic detail (tree nav, rendered Markdown, file switcher)
 
 ## Getting started
@@ -96,14 +100,12 @@ Other scripts:
 
 ### Environment
 
-| Variable                 | Default             | Purpose                                                          |
-| ------------------------ | ------------------- | ---------------------------------------------------------------- |
-| `VAULT_DIR`              | `../KnowledgeVault` | Path to the vault folder, relative to the client app.            |
-| `KNOWLEDGEHUB_AUTHORING` | on in dev, off prod | Force in-app authoring on outside `next dev` (see below).        |
-| `KNOWLEDGEHUB_PUBLISH_BRANCH` | `development`  | Branch that **Save** commits + pushes to (see below).            |
+| Variable    | Default             | Purpose                                               |
+| ----------- | ------------------- | ------------------------------------------------------ |
+| `VAULT_DIR` | `../KnowledgeVault` | Path to the vault folder, relative to the client app. |
 
-Copy `.env.example` to `.env.local` to set any of these. None are required just
-to browse the vault.
+Copy `.env.example` to `.env.local` to set this. Not required just to browse
+the vault.
 
 ## How it works
 
@@ -123,15 +125,13 @@ to browse the vault.
 - Content changes ship via a normal rebuild/redeploy (pure SSG; the app never
   reads the vault at runtime in production).
 
-## Authoring content (local)
+## Authoring content
 
-You can create and edit content **in the app while running it locally** — the
-deployed site stays read-only. This is by design: writing files and running
-`git` need a writable disk and your git credentials, which only exist on your
-machine. On Vercel the filesystem is read-only and there's no git, so the
-authoring UI is hidden there automatically.
+There is no in-app authoring — the deployed site and the dev server are both
+read-only views of the vault. Content is added by editing Markdown files
+directly and publishing through normal git commits.
 
-### Option A — `/add-topic` slash command (recommended)
+### `/add-topic` slash command (recommended)
 
 Open Claude Code in this repo and run:
 
@@ -145,30 +145,12 @@ and automatically maintains parent–child bidirectionality. See
 [`.claude/commands/add-topic.md`](.claude/commands/add-topic.md) for the full
 workflow.
 
-### Option B — in-app authoring
+### Editing by hand
 
-Run `npm run dev`, then:
-
-1. **Add Knowledge** (navbar) — enter a topic name; a live check shows whether
-   the id is free (GitHub-repo style). Create it and you land on the new topic,
-   scaffolded from a default `_index.md`.
-2. **Add file / Edit** (on a topic) — add a sibling Markdown file, or edit any
-   file in a textarea with a **live preview** beside it.
-3. **Save** — give a non-empty commit message. KnowledgeHub writes the file,
-   then stages, commits, and pushes **all pending vault changes** (scoped to
-   `KnowledgeVault/` only) to the **`development`** branch. Creating topics/files
-   is a *temporary* local change until you Save.
-4. A confirmation toast reports the result (e.g. *Pushed to development*). You
-   must be on the `development` branch to publish — KnowledgeHub refuses
-   otherwise, so content never lands on the wrong branch. Switch once with
-   `git switch development` (or `git switch -c development`) and stay there.
-
-> **Note:** the in-app flow does not fill in `parent`, `children`, or `tags`
-> automatically. Edit the generated `_index.md` by hand, or use `/add-topic`
-> instead.
-
-Authoring is gated by `isAuthoringEnabled()` (on in `next dev`, off in
-production). Set `KNOWLEDGEHUB_PUBLISH_BRANCH` to publish to a different branch.
+You can always create or edit files in `KnowledgeVault/` directly, then commit
+and push as usual. Follow the frontmatter schema and conventions in
+[`KnowledgeVault/CLAUDE.md`](KnowledgeVault/CLAUDE.md), including the required
+`status: draft | complete` field and the parent/children bidirectionality rule.
 
 ## Tech stack
 
@@ -179,7 +161,7 @@ Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 
 ## Notes
 
 - The vault is the single source of truth — no database, no auth (content is public).
-- In-app authoring is **local-only** (see above); the deployed site is read-only.
-  You can always edit the Markdown in `KnowledgeVault/` by hand instead.
+- Both the dev server and the deployed site are read-only; edit Markdown in
+  `KnowledgeVault/` directly and publish via git.
 - `Explore` and `About` are placeholder pages; tag chips are styled but not yet
   filterable.
