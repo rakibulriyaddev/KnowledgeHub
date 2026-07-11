@@ -5,7 +5,7 @@ created: 2026-07-11
 modified: 2026-07-11
 tags: [programming, paradigm, software-design]
 parent: null
-children: [design-patterns, solid-principles, encapsulation, polymorphism, inheritance]
+children: [design-patterns, solid-principles, encapsulation, polymorphism, inheritance, abstraction]
 status: draft
 ---
 
