@@ -68,8 +68,7 @@ New topic: `<slug>`
   Tags     : [<proposed tags>]
   Status   : draft                 (draft or complete)
 
-Available topics (for parent / children):
-  none        →  (root, no parent)
+Relevant topics (for parent / children):
   programming →  Programming
   javascript  →  JavaScript
   …
@@ -81,6 +80,8 @@ Reply with your choices, e.g.:
   Tags: [programming, web, typed, language]
   Status: draft
 ```
+
+**Relevant topics list**: at most 5 entries, only topics plausibly related to the new one (candidates for parent or children) — never the full vault listing. Rank by relevance (best parent/child match first). Omit this list entirely if nothing in the vault is plausibly related.
 
 **Status default**: always propose `draft`. Only use `complete` if the user explicitly says the topic content is already finished.
 
