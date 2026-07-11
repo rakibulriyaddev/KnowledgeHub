@@ -5,7 +5,7 @@ created: 2026-07-11
 modified: 2026-07-11
 tags: [architecture, distributed-systems, scalability, engineering]
 parent: null
-children: [networking, sd-databases, architecture-patterns, reliability-security, case-studies]
+children: [networking, sd-databases, architecture-patterns, reliability-security, case-studies, system-design-vs-dsa]
 status: draft
 ---
 
