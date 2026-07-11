@@ -5,7 +5,7 @@ created: 2026-07-11
 modified: 2026-07-11
 tags: [system-design, distributed-systems, infrastructure]
 parent: system-design
-children: [availability, caching, cdn, clustering, dns, ip, load-balancing, osi, proxy, scalability, storage, tcp-udp]
+children: [availability, caching, cdn, clustering, dns, ftp, http, https, ip, load-balancing, osi, proxy, scalability, smtp, storage, tcp, udp, websocket]
 status: draft
 ---
 
@@ -16,6 +16,7 @@ Networking fundamentals are the layer every distributed system stands on: how a 
 ## Key Concepts
 
 - Addressing and transport — IP, TCP/UDP, the OSI model.
+- Application protocols — HTTP/HTTPS, FTP, SMTP, WebSocket.
 - Traffic distribution — load balancing, proxies, CDNs.
 - Growth handling — scalability, clustering, caching, storage.
 - Name resolution — DNS.
