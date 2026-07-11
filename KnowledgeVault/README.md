@@ -9,16 +9,16 @@ Each topic is a folder at the root of this directory containing an `_index.md` f
 ```
 KnowledgeVault/
 ├── CLAUDE.md               ← authoring conventions (read this first)
-├── programming/
+├── system-design/
 │   └── _index.md           ← root topic
-├── javascript/
-│   ├── _index.md           ← child of programming
-│   ├── qa.md               ← sibling file (appears in topic switcher)
-│   └── resources.md
-├── javascript-async/
-│   └── _index.md           ← child of javascript
-└── javascript-promises/
-    └── _index.md           ← child of javascript
+├── networking/
+│   └── _index.md           ← child of system-design
+├── tcp/
+│   ├── _index.md           ← child of networking
+│   ├── deep-dive.md        ← sibling file (appears in topic switcher)
+│   └── qa.md
+└── udp/
+    └── _index.md           ← child of networking
 ```
 
 ## Conventions
@@ -35,8 +35,8 @@ The fastest way is the `/add-topic` slash command in Claude Code:
 
 It derives the slug, checks for collisions, asks for title / parent / children / tags in one step, writes the `_index.md` with real content, and fixes parent–child bidirectionality automatically.
 
-Alternatively, use the **Add Knowledge** button in the web app (`npm run dev` in `KnowledgeHub-Client/`), then edit the generated `_index.md` by hand to fill in `parent`, `children`, and `tags`.
+Alternatively, create or edit files by hand directly in this folder, following the conventions in [CLAUDE.md](CLAUDE.md) — including the `status: draft | complete` field.
 
 ## Publishing
 
-Content changes are local until you commit. In the web app, click **Save**, enter a commit message, and the app stages + pushes all pending vault changes to the `development` branch.
+There is no in-app authoring. Content changes are local until you commit and push them with git as usual (the `KnowledgeHub-Client` app only reads the vault; it never writes to it).
