@@ -4,7 +4,7 @@ title: "Design Patterns"
 created: 2026-07-11
 modified: 2026-07-11
 tags: [programming, oop, architecture]
-parent: null
+parent: oop
 children: [creational-patterns, structural-patterns, behavioral-patterns]
 status: draft
 ---
