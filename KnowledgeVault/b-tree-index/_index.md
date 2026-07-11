@@ -6,6 +6,7 @@ modified: 2026-07-10
 tags: [database, performance, index]
 parent: database-indexing
 children: []
+status: draft
 ---
 
 # B-Tree Index

@@ -66,6 +66,7 @@ New topic: `<slug>`
   Parent   : <proposed parent id>  (or "none")
   Children : none                  (list existing topic ids to link, or "none")
   Tags     : [<proposed tags>]
+  Status   : draft                 (draft or complete)
 
 Available topics (for parent / children):
   none        →  (root, no parent)
@@ -78,7 +79,10 @@ Reply with your choices, e.g.:
   Parent: programming
   Children: none
   Tags: [programming, web, typed, language]
+  Status: draft
 ```
+
+**Status default**: always propose `draft`. Only use `complete` if the user explicitly says the topic content is already finished.
 
 **Title default**: title-case of the raw input (`"react hooks"` → `"React Hooks"`).
 
@@ -108,7 +112,7 @@ Create the folder `KnowledgeVault/<slug>/` if it does not exist.
 
 Write `KnowledgeVault/<slug>/_index.md` with:
 
-**Frontmatter** (all 7 fields required — see `KnowledgeVault/CLAUDE.md`):
+**Frontmatter** (all 8 fields required — see `KnowledgeVault/CLAUDE.md`):
 
 ```yaml
 ---
@@ -119,6 +123,7 @@ modified: <today YYYY-MM-DD>
 tags: [<confirmed tags>]
 parent: <confirmed parent id, or null>
 children: [<confirmed child ids, or empty>]
+status: <confirmed status, draft or complete>
 ---
 ```
 

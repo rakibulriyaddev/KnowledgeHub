@@ -6,6 +6,7 @@ modified: 2026-07-11
 tags: [data, storage, sql]
 parent: database
 children: [normalization, postgresql, mysql]
+status: draft
 ---
 
 # Structured Database

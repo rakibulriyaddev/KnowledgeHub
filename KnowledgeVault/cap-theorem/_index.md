@@ -6,6 +6,7 @@ modified: 2026-07-10
 tags: [data, storage, distributed-systems]
 parent: database
 children: []
+status: draft
 ---
 
 # CAP Theorem

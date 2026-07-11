@@ -6,6 +6,7 @@ modified: 2026-07-11
 tags: [data, storage, performance]
 parent: database-indexing
 children: [bloom-filter]
+status: draft
 ---
 
 # LSM Tree

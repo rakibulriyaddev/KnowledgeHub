@@ -6,6 +6,7 @@ modified: 2026-07-11
 tags: [data, storage]
 parent: null
 children: [structured-database, unstructured-database, database-indexing, database-transaction, cap-theorem, database-schema, connection-pooling, database-replication, database-sharding, consistent-hashing, sql-vs-nosql, database-security, database-backup-recovery]
+status: draft
 ---
 
 # Database

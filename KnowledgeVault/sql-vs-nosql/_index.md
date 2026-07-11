@@ -6,6 +6,7 @@ modified: 2026-07-11
 tags: [data, storage, architecture]
 parent: database
 children: []
+status: draft
 ---
 
 # SQL vs NoSQL

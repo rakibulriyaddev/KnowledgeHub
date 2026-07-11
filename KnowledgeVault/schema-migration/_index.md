@@ -6,6 +6,7 @@ modified: 2026-07-11
 tags: [data, storage]
 parent: database-schema
 children: []
+status: draft
 ---
 
 # Schema Migration
