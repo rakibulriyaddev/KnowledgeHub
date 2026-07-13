@@ -1,43 +1,52 @@
 # KnowledgeHub
 
-> **Live →** [riyad-knowledge-hub.vercel.app](https://riyad-knowledge-hub.vercel.app)
+A Flutter Android app that renders and navigates **KnowledgeVault** — a
+folder of interconnected Markdown notes linked by frontmatter. Mobile-first,
+dark-mode, offline (the vault is baked into the app at build time; no
+backend, no database, no runtime network calls for content).
 
-A web client that renders and navigates **KnowledgeVault** — a folder of
-interconnected Markdown notes linked by frontmatter. Built with Next.js 16
-(App Router), Tailwind CSS v4, and Shiki-powered syntax highlighting.
-Mobile-first, dark-mode.
+This is a single-repo **monorepo**: the content (`KnowledgeVault/`) and the
+Android app (`KnowledgeHub-Flutter/`) live side by side. The app reads the
+vault via a build-time script that bakes it into a JSON asset bundled in the
+APK — there's no filesystem access at runtime.
 
-This is a single-repo **monorepo**: the content (`KnowledgeVault/`) and the web
-app (`KnowledgeHub-Client/`) live side by side. The client reads the vault from
-the local filesystem at build time and prerenders every page as static HTML —
-no database, no API, no runtime fetching.
+This project is developed with a fully AI-driven workflow — see
+[`CLAUDE.md`](CLAUDE.md) and [`docs/`](docs/) for the architecture, data
+model, conventions, and design-decision log an AI session should read before
+making changes.
 
 ## Repository layout
 
 ```
 KnowledgeHub/
-├── KnowledgeVault/         # Markdown content (the knowledge base)
-│   ├── CLAUDE.md           # Authoring conventions and frontmatter rules
-│   ├── README.md           # Vault overview and quick-start
+├── KnowledgeVault/              # Markdown content (the knowledge base)
+│   ├── CLAUDE.md                # Authoring conventions and frontmatter rules
+│   ├── README.md                # Vault overview and quick-start
 │   ├── system-design/
 │   │   └── _index.md
 │   ├── networking/
-│   │   ├── _index.md       # child of system-design
+│   │   ├── _index.md            # child of system-design
 │   │   └── ...
 │   ├── tcp/
-│   │   ├── _index.md       # child of networking
+│   │   ├── _index.md            # child of networking
 │   │   ├── deep-dive.md
 │   │   └── qa.md
-│   └── ...                 # one folder per topic, flat at the root
-├── KnowledgeHub-Client/    # Next.js web app (this is what you deploy)
-│   ├── app/                # routes: / (home) and /topic/[id]
-│   ├── components/         # Navbar, SearchBar, MarkdownViewer, ...
-│   ├── lib/                # vault (fs reads), search index, markdown config
-│   ├── scripts/            # build-search-index.ts
-│   └── public/             # search-index.json (generated)
+│   └── ...                      # one folder per topic, flat at the root
+├── KnowledgeHub-Flutter/         # Flutter Android app (this is what you build/run)
+│   ├── lib/
+│   │   ├── models/                # Frontmatter, VaultNode, Panel, SearchIndexEntry
+│   │   ├── data/                  # vault repository (loads the baked asset) + fuzzy search
+│   │   ├── theme/                 # light/dark theme + persisted theme mode
+│   │   ├── widgets/                # search field, topic card, markdown renderer, tag chips, ...
+│   │   └── screens/                # Home, Explore, About, Topic detail, Not found
+│   ├── tool/build_vault_data.dart # bakes KnowledgeVault into assets/vault_data.json
+│   └── assets/
+│       ├── vault_data.json         # generated — frontmatter + panel bodies + search index
+│       └── vault_images/           # topic images referenced from Markdown bodies
+├── docs/                          # architecture, data model, conventions, decisions (AI onboarding)
 └── .claude/
     └── commands/
-        └── add-topic.md    # /add-topic slash command (Claude Code)
+        └── add-topic.md          # /add-topic slash command (Claude Code)
 ```
 
 ## KnowledgeVault structure
@@ -53,7 +62,7 @@ tag conventions, and content standards are documented in
 
 ```yaml
 ---
-id: tcp                         # informational; the folder name is the canonical id/URL
+id: tcp                         # informational; the folder name is the canonical id
 title: "TCP (Transmission Control Protocol)"
 created: 2026-07-11
 modified: 2026-07-11
@@ -70,66 +79,57 @@ Flavored Markdown (tables, task lists, ...) is supported.
 ```
 
 Add any number of sibling Markdown files to a topic folder (e.g. `qa.md`,
-`resources.md`). They appear in the **"Also in this topic"** switcher and render
-inline without a page reload. An optional `title:` in their frontmatter sets the
-switcher label (otherwise the filename is humanized).
+`resources.md`). They appear in the **"Also in this topic"** panel switcher.
+An optional `title:` in their frontmatter sets the switcher label (otherwise
+the filename is humanized).
 
-Routes:
-
-- `/` — home: search bar + Chapters (topics grouped by section)
-- `/topic/<folder-name>` — topic detail (tree nav, rendered Markdown, file switcher)
+Topic images are referenced from a Markdown body via an absolute path like
+`/vault/<topic-id>/<file>` and physically live in
+`KnowledgeHub-Flutter/assets/vault_images/<topic-id>/<file>` — see
+[`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) for how that resolves at render
+time.
 
 ## Getting started
 
 ```bash
-cd KnowledgeHub-Client
-npm install
-npm run dev          # http://localhost:3000  (regenerates the search index first)
+cd KnowledgeHub-Flutter
+dart run tool/build_vault_data.dart   # bake KnowledgeVault into assets/vault_data.json
+flutter run                            # needs an Android device/emulator
 ```
 
-Build and run for production:
+Build an APK:
 
 ```bash
-npm run build        # runs the search-index script, then `next build` (SSG)
-npm run start
+flutter build apk            # or --debug for a quick local build
 ```
 
-Other scripts:
-
-- `npm run index` — regenerate `public/search-index.json` from the vault
-
-### Environment
-
-| Variable    | Default             | Purpose                                               |
-| ----------- | ------------------- | ------------------------------------------------------ |
-| `VAULT_DIR` | `../KnowledgeVault` | Path to the vault folder, relative to the client app. |
-
-Copy `.env.example` to `.env.local` to set this. Not required just to browse
-the vault.
+**Re-run the bake step after every `KnowledgeVault/` content change** — the
+app has no live filesystem access; without it you'll see stale content. See
+[`KnowledgeHub-Flutter/README.md`](KnowledgeHub-Flutter/README.md) and
+[`KnowledgeHub-Flutter/CLAUDE.md`](KnowledgeHub-Flutter/CLAUDE.md) for more.
 
 ## How it works
 
-- **Build time:** `scripts/build-search-index.ts` (run via the `prebuild` /
-  `predev` hooks) reads every `_index.md`, parses frontmatter with
-  `gray-matter`, and writes a compact `public/search-index.json`
-  (`{ id, title, tags, parent, children, created, modified }`).
-- **Pages:** `generateStaticParams` enumerates the vault folders and every topic
-  page is prerendered as static HTML. Markdown is rendered **server-side** with
-  `react-markdown` (`MarkdownAsync`) + `remark-gfm` + `rehype-pretty-code`
-  (Shiki, dual light/dark themes), so Shiki never ships to the browser and there
-  is no `dangerouslySetInnerHTML`.
-- **Search:** the home page loads `search-index.json` and runs `fuse.js`
-  client-side for live, fuzzy matching on `title` and `tags` (max 10 results).
-- **Inline switching:** a topic's `_index.md` and every sibling are all rendered
-  at build time and toggled by a small client component — instant, no reload.
-- Content changes ship via a normal rebuild/redeploy (pure SSG; the app never
-  reads the vault at runtime in production).
+- **Build time:** `tool/build_vault_data.dart` reads every `_index.md` and
+  sibling file, parses frontmatter, and writes a single
+  `assets/vault_data.json` containing every topic's normalized frontmatter,
+  every panel's rendered-ready body, and a compact search index.
+- **Runtime:** `VaultRepository` loads that one JSON asset once at app
+  startup and serves every screen from memory — no filesystem or network
+  access after that.
+- **Search:** a lightweight custom fuzzy scorer (title weight 0.7, tag
+  weight 0.3) runs in-memory over the baked search index.
+- **Images:** Markdown bodies embed images via absolute `/vault/<topic>/<file>`
+  links; the Markdown renderer resolves these against
+  `assets/vault_images/<topic>/<file>`, bundled directly in the app.
+- Content changes ship by re-running the bake script and rebuilding the app —
+  there's no in-app authoring and no runtime content fetching.
 
 ## Authoring content
 
-There is no in-app authoring — the deployed site and the dev server are both
-read-only views of the vault. Content is added by editing Markdown files
-directly and publishing through normal git commits.
+There is no in-app authoring — the app is a read-only view of the vault.
+Content is added by editing Markdown files directly and publishing through
+normal git commits.
 
 ### `/add-topic` slash command (recommended)
 
@@ -154,14 +154,16 @@ and push as usual. Follow the frontmatter schema and conventions in
 
 ## Tech stack
 
-Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 ·
-`@tailwindcss/typography` · `react-markdown` + `remark-gfm` + `rehype-pretty-code`
-(Shiki) · `gray-matter` · `fuse.js` · `next-themes`.
+Flutter 3 / Dart 3, Material 3 · `flutter_markdown_plus` + GFM ·
+`package:highlight` + `flutter_highlight` (syntax highlighting) ·
+`go_router` · `provider` (theme only) · `shared_preferences` (persisted
+theme).
 
 ## Notes
 
 - The vault is the single source of truth — no database, no auth (content is public).
-- Both the dev server and the deployed site are read-only; edit Markdown in
-  `KnowledgeVault/` directly and publish via git.
-- `Explore` and `About` are placeholder pages; tag chips are styled but not yet
-  filterable.
+- The app is read-only; edit Markdown in `KnowledgeVault/` directly and
+  publish via git, then re-bake and rebuild the app.
+- `Explore` and `About` are placeholder screens; tag chips are styled but not
+  yet filterable.
+- Android only, by design — see `docs/DECISIONS.md`.

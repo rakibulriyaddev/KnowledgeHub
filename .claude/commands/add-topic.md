@@ -194,8 +194,9 @@ Done! Created topic "<title>" at KnowledgeVault/<slug>/
   <parent-id>/_index.md  → added "<slug>" to children.    (omit if no parent)
   <child-id>/_index.md   → set parent to "<slug>".        (repeat for each child)
 
-To publish: open the app (npm run dev in KnowledgeHub-Client), make any
-edits you want, then click Save and enter a commit message.
+To publish: commit and push the changed files in KnowledgeVault/ as usual.
+If KnowledgeHub-Flutter/assets/vault_data.json needs the new content to show
+in the Android app, re-run `dart run tool/build_vault_data.dart` there too.
 ```
 
 ---

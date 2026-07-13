@@ -1,0 +1,76 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../models/vault_models.dart';
+
+/// Mirrors the TreeNav in components/TopicSidebar.tsx: parent link, current
+/// topic, and child links. Rendered inline (no desktop/mobile split — this
+/// app is Android-only, so there's just one layout).
+class TopicTreeNav extends StatelessWidget {
+  const TopicTreeNav({super.key, required this.tree});
+
+  final TopicTree tree;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final labelStyle = theme.textTheme.labelSmall?.copyWith(
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.5,
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (tree.parent != null) ...[
+          Text('PARENT', style: labelStyle),
+          const SizedBox(height: 4),
+          _NavTile(label: '↑ ${tree.parent!.title}', onTap: () => context.push('/topic/${tree.parent!.id}')),
+          const SizedBox(height: 16),
+        ],
+        Text('CURRENT', style: labelStyle),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            tree.current.title,
+            style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.primary),
+          ),
+        ),
+        if (tree.children.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text('CHILDREN', style: labelStyle),
+          const SizedBox(height: 4),
+          for (final child in tree.children)
+            _NavTile(label: '↳ ${child.title}', onTap: () => context.push('/topic/${child.id}')),
+        ],
+      ],
+    );
+  }
+}
+
+class _NavTile extends StatelessWidget {
+  const _NavTile({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Text(label),
+      ),
+    );
+  }
+}
