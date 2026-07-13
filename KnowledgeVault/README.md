@@ -39,4 +39,4 @@ Alternatively, create or edit files by hand directly in this folder, following t
 
 ## Publishing
 
-There is no in-app authoring. Content changes are local until you commit and push them with git as usual (the `KnowledgeHub-Client` app only reads the vault; it never writes to it).
+There is no in-app authoring. Content changes are local until you commit and push them with git as usual (the `KnowledgeHub-Flutter` app only reads the vault; it never writes to it, and needs `dart run tool/build_vault_data.dart` re-run to pick up changes).
