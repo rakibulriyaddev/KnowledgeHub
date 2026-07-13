@@ -50,7 +50,6 @@ class _TopicScreenState extends State<TopicScreen> {
     );
 
     return AppScaffold(
-      title: node.frontmatter.title,
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
