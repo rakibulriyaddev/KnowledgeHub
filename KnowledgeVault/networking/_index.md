@@ -5,7 +5,7 @@ created: 2026-07-11
 modified: 2026-07-15
 tags: [system-design, distributed-systems, infrastructure]
 parent: system-design
-children: [availability, caching, cdn, clustering, dns, firewall, ftp, http, https, ip, load-balancing, osi, port-forwarding, proxy, scalability, smtp, storage, tcp, udp, websocket]
+children: [availability, caching, cdn, clustering, dns, firewall, ftp, http, https, ip, load-balancing, osi, port, port-forwarding, proxy, scalability, smtp, ssh, storage, tcp, udp, websocket]
 status: draft
 ---
 
