@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'data/user_profile_storage.dart';
 import 'data/vault_repository.dart';
 import 'screens/about_screen.dart';
+import 'screens/entry_screen.dart';
 import 'screens/explore_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/not_found_screen.dart';
@@ -15,6 +17,19 @@ void main() {
   runApp(const KnowledgeHubApp());
 }
 
+class _StartupData {
+  const _StartupData(this.repository, this.hasProfile);
+
+  final VaultRepository repository;
+  final bool hasProfile;
+}
+
+Future<_StartupData> _loadStartupData() async {
+  final repository = await VaultRepository.load();
+  final hasProfile = await UserProfileStorage().hasProfile();
+  return _StartupData(repository, hasProfile);
+}
+
 /// Root widget. Mirrors app/layout.tsx: loads the vault once, then hosts
 /// theming + routing for every screen.
 class KnowledgeHubApp extends StatelessWidget {
@@ -24,8 +39,8 @@ class KnowledgeHubApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => ThemeController()..load(),
-      child: FutureBuilder<VaultRepository>(
-        future: VaultRepository.load(),
+      child: FutureBuilder<_StartupData>(
+        future: _loadStartupData(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return MaterialApp(
@@ -37,7 +52,8 @@ class KnowledgeHubApp extends StatelessWidget {
               home: Scaffold(body: Center(child: CircularProgressIndicator())),
             );
           }
-          return _RoutedApp(repository: snapshot.data!);
+          final data = snapshot.data!;
+          return _RoutedApp(repository: data.repository, hasProfile: data.hasProfile);
         },
       ),
     );
@@ -45,9 +61,10 @@ class KnowledgeHubApp extends StatelessWidget {
 }
 
 class _RoutedApp extends StatefulWidget {
-  const _RoutedApp({required this.repository});
+  const _RoutedApp({required this.repository, required this.hasProfile});
 
   final VaultRepository repository;
+  final bool hasProfile;
 
   @override
   State<_RoutedApp> createState() => _RoutedAppState();
@@ -55,8 +72,9 @@ class _RoutedApp extends StatefulWidget {
 
 class _RoutedAppState extends State<_RoutedApp> {
   late final GoRouter _router = GoRouter(
-    initialLocation: '/',
+    initialLocation: widget.hasProfile ? '/' : '/entry',
     routes: [
+      GoRoute(path: '/entry', builder: (context, state) => const EntryScreen()),
       GoRoute(path: '/', builder: (context, state) => HomeScreen(repository: widget.repository)),
       GoRoute(path: '/explore', builder: (context, state) => const ExploreScreen()),
       GoRoute(path: '/about', builder: (context, state) => const AboutScreen()),

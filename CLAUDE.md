@@ -15,9 +15,12 @@ session ends.
 
 A personal knowledge base (**KnowledgeVault** — Markdown notes linked by
 frontmatter) rendered by a single client: a **Flutter Android app**. The app
-is a read-only viewer over the content; it has no database, no backend, no
-auth, and no runtime network access for content (the vault is baked into the
-app at build time).
+is a read-only viewer over *content* — there's no in-app authoring, and the
+vault is still baked into the app at build time, never read live. It does,
+however, have one small backend now: **KnowledgeHub-Api** (.NET + MongoDB)
+tracks per-user "have you read this topic" state, identified by an email the
+user enters once on a no-auth entry screen. See ADR-010 in
+[docs/DECISIONS.md](docs/DECISIONS.md).
 
 ```
 KnowledgeHub/
@@ -33,6 +36,8 @@ KnowledgeHub/
 ├── KnowledgeVault/            ← the content (single source of truth)
 │   └── CLAUDE.md              ← authoring rules — READ before touching any topic
 ├── KnowledgeHub-Flutter/        ← the Flutter Android app
+│   └── CLAUDE.md
+├── KnowledgeHub-Api/             ← .NET + MongoDB backend, per-user read tracking only
 │   └── CLAUDE.md
 └── .claude/commands/add-topic.md ← /add-topic slash command
 ```
