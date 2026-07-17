@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../data/user_profile_storage.dart';
 
 final _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+final _namePattern = RegExp(r"^[a-zA-Z][a-zA-Z' -]*$");
 
 /// One-time identity capture shown before the home screen. No login, no
 /// auth — just a name + email saved to secure storage and reused as the
@@ -73,8 +74,15 @@ class _EntryScreenState extends State<EntryScreen> {
                       labelText: 'Full Name',
                       border: OutlineInputBorder(),
                     ),
-                    validator: (value) =>
-                        (value == null || value.trim().isEmpty) ? 'Full name is required' : null,
+                    validator: (value) {
+                      final trimmed = value?.trim() ?? '';
+                      if (trimmed.isEmpty) return 'Full name is required';
+                      if (trimmed.length < 2) return 'Full name is too short';
+                      if (!_namePattern.hasMatch(trimmed)) {
+                        return 'Only letters, spaces, hyphens and apostrophes allowed';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

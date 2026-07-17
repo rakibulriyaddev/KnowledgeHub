@@ -20,6 +20,13 @@ public class TopicStatusController(TopicStatusService service) : ControllerBase
         await service.MarkReadAsync(request.TopicId, request.Email);
         return Ok(new { status = true });
     }
+
+    [HttpPost("mark-unread")]
+    public async Task<IActionResult> MarkUnread([FromBody] MarkReadRequest request)
+    {
+        await service.MarkUnreadAsync(request.TopicId, request.Email);
+        return Ok(new { status = false });
+    }
 }
 
 public record MarkReadRequest(string TopicId, string Email);

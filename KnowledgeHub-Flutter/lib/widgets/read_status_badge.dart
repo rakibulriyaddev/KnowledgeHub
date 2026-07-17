@@ -67,6 +67,25 @@ class _ReadStatusBadgeState extends State<ReadStatusBadge> {
     }
   }
 
+  Future<void> _markUnread() async {
+    setState(() => _marking = true);
+    try {
+      final email = await _storage.getEmail();
+      await _api.markUnread(topicId: widget.topicId, email: email ?? '');
+      if (!mounted) return;
+      setState(() {
+        _marking = false;
+        _statusFuture = Future.value(false);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _marking = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Update status failed'), behavior: SnackBarBehavior.floating),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
@@ -85,16 +104,17 @@ class _ReadStatusBadgeState extends State<ReadStatusBadge> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _Pill(isRead: isRead),
-            if (!isRead) ...[
-              const SizedBox(width: 8),
-              _marking
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : TextButton(onPressed: _markRead, child: const Text('Mark as read')),
-            ],
+            const SizedBox(width: 8),
+            _marking
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : TextButton(
+                    onPressed: isRead ? _markUnread : _markRead,
+                    child: Text(isRead ? 'Mark as unread' : 'Mark as read'),
+                  ),
           ],
         );
       },

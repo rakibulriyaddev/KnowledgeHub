@@ -13,6 +13,8 @@ and that email is sent as plain payload on every call.
 - `GET /api/topic-status?topicId=...&email=...` → `{ "status": true|false }`
 - `POST /api/topic-status/mark-read` body `{ "topicId": "...", "email": "..." }`
   → upserts a document and returns `{ "status": true }`
+- `POST /api/topic-status/mark-unread` body `{ "topicId": "...", "email": "..." }`
+  → upserts a document and returns `{ "status": false }`
 - `GET /health` → `{ "status": "ok" }` — liveness check, available in every
   environment including after deployment (`Controllers/HealthController.cs`)
 

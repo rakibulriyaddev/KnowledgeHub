@@ -30,5 +30,12 @@ public class TopicStatusService
         await _collection.ReplaceOneAsync(d => d.Id == id, document, new ReplaceOptions { IsUpsert = true });
     }
 
+    public async Task MarkUnreadAsync(string topicId, string email)
+    {
+        var id = BuildId(topicId, email);
+        var document = new TopicStatusDocument { Id = id, TopicId = topicId, Status = false };
+        await _collection.ReplaceOneAsync(d => d.Id == id, document, new ReplaceOptions { IsUpsert = true });
+    }
+
     private static string BuildId(string topicId, string email) => $"{email.ToLowerInvariant()}_{topicId}";
 }

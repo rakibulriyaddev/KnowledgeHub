@@ -36,4 +36,16 @@ class TopicStatusApi {
       throw Exception('Failed to mark as read (${response.statusCode})');
     }
   }
+
+  Future<void> markUnread({required String topicId, required String email}) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}/api/topic-status/mark-unread');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'topicId': topicId, 'email': email}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to mark as unread (${response.statusCode})');
+    }
+  }
 }
