@@ -50,6 +50,12 @@ step when no emulator is available):
 flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:5270
 ```
 
+For a release APK pointed at the production backend:
+
+```bash
+flutter build apk --dart-define=API_BASE_URL=https://knowledgehub.ttzs.live
+```
+
 ## Verify before calling a change done
 
 ```bash
@@ -85,5 +91,13 @@ exercising the actual screen you changed over trusting analyze/build alone
 
 ## Deployment
 
-No deployment pipeline exists yet. APKs are built locally
+**Backend** (`KnowledgeHub-Api`) is deployed at `https://knowledgehub.ttzs.live`
+— an Ubuntu box (Oracle Cloud), running as a systemd service
+(`knowledgehub-api.service`) behind nginx (TLS via certbot/Let's Encrypt).
+No CI/CD: redeploying means `dotnet publish -r linux-arm64
+--self-contained false`, copying the output over, and restarting the
+service manually. Mongo lives on Atlas; the connection string is an env var
+in `/etc/knowledgehub-api.env` on the server, never committed.
+
+**Flutter app**: no deployment pipeline exists yet. APKs are built locally
 (`flutter build apk`); there's no Play Store listing or CI release flow.
