@@ -129,3 +129,33 @@ references to `KnowledgeHub-Client` in code, docs, or `.claude/` config —
 if a web client is wanted again in the future, it should be scoped as a new
 decision, not a revival of the old one (its logic will be stale relative to
 whatever the vault/Flutter app have evolved into by then).
+
+### ADR-010 — Per-user read tracking via a new .NET + MongoDB backend, identity via a no-auth entry screen
+
+**Context:** Topic "status" (draft/complete) was baked from frontmatter —
+a content-authoring concept, the same for every reader. The user wanted a
+*per-person* "have I read this topic" state instead, with no login/auth,
+just a name + email entered once.
+**Decision:** Added `KnowledgeHub-Api/`, a .NET 10 minimal API with two
+endpoints (`GET /api/topic-status`, `POST /api/topic-status/mark-read`)
+backed by a single MongoDB collection (`topic_status`, unique index on
+`(email, topicId)`). The Flutter app gained: an `EntryScreen` (full name +
+email, no validation beyond non-empty/format, saved via
+`flutter_secure_storage`) shown once at startup when both fields are absent;
+and `ReadStatusBadge`, which replaced the old frontmatter-driven
+`StatusBadge` on the topic detail page — it calls the API on open (loading
+spinner while pending) and shows **Done** (green) or **Draft** (amber) + a
+**Mark as read** button that POSTs the same `{topicId, email}` payload.
+**Consequence:** The app now has its first runtime network dependency and
+its first persisted user identity — see the updated system diagram in
+[ARCHITECTURE.md](ARCHITECTURE.md). The API's base URL is supplied at build
+time via `--dart-define=API_BASE_URL=...` (see
+[WORKFLOWS.md](WORKFLOWS.md)), so a debug build against a local backend and
+a build against a deployed one differ only in that flag. The old
+`Frontmatter.status`/`TopicStatus` model and frontmatter field were left in
+place (still baked from `KnowledgeVault/`, still a legitimate
+content-authoring concept) — they're just no longer rendered anywhere, since
+ripping them out would mean touching ~140 vault topic files for no
+functional gain. This backend is scoped narrowly to read-tracking; see the
+"KnowledgeHub-Api (the one backend)" section in ARCHITECTURE.md before
+expanding it.

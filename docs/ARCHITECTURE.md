@@ -14,16 +14,21 @@
                         assets/vault_data.json
                                   │ bundled in APK
                                   ▼
-                    ┌─────────────────────────────┐
-                    │  KnowledgeHub-Flutter        │
-                    │  Flutter (Android only)      │
-                    │  → local APK builds           │
-                    └─────────────────────────────┘
+                    ┌─────────────────────────────┐        GET/POST           ┌─────────────────────┐
+                    │  KnowledgeHub-Flutter        │  /api/topic-status  ───▶  │  KnowledgeHub-Api     │
+                    │  Flutter (Android only)      │ ◀────────────────────────│  .NET 10 minimal API  │
+                    │  → local APK builds           │      { status }          └──────────┬──────────┘
+                    └─────────────────────────────┘                                       │
+                                                                                            ▼
+                                                                                  MongoDB (topic_status)
 ```
 
-The app has no database, no backend API, and no authentication. It is a
-**read-only renderer**. All state lives as files in `KnowledgeVault/`, and
-content changes ship by re-baking the JSON asset and rebuilding the app.
+Content is a **read-only render**: all topic text/metadata lives as files in
+`KnowledgeVault/`, and content changes ship by re-baking the JSON asset and
+rebuilding the app. The one piece of *mutable, per-user* state — whether a
+given email has read a given topic — lives server-side in MongoDB instead,
+fetched/updated over HTTP from the topic detail screen. See ADR-010 in
+[DECISIONS.md](DECISIONS.md) for why this one exception exists.
 
 ## KnowledgeVault (content layer)
 
@@ -65,20 +70,26 @@ KnowledgeHub-Flutter/
 │   ├── theme/
 │   │   ├── app_theme.dart         # light/dark ThemeData
 │   │   └── theme_controller.dart  # ChangeNotifier, persisted via shared_preferences
-│   ├── widgets/                   # search field, topic card, tree nav, panel selector, markdown renderer, tag chip, status badge, metadata header, app scaffold
-│   └── screens/                   # Home, Explore, About, Topic, NotFound
-└── main.dart                       # ChangeNotifierProvider + FutureBuilder<VaultRepository> + GoRouter
+│   ├── widgets/                   # search field, topic card, tree nav, panel selector, markdown renderer, tag chip, read status badge, metadata header, app scaffold
+│   └── screens/                   # Entry, Home, Explore, About, Topic, NotFound
+└── main.dart                       # ChangeNotifierProvider + FutureBuilder<_StartupData> + GoRouter
 ```
 
 ### Screens
 
 | Screen | Route | Purpose |
 |---|---|---|
+| `EntryScreen` | `/entry` | one-time full name + email capture, saved to secure storage; only shown when both are absent |
 | `HomeScreen` | `/` | search field + Chapters (top-level topics) list |
 | `ExploreScreen` | `/explore` | stub |
 | `AboutScreen` | `/about` | stub |
 | `TopicScreen` | `/topic/:id` | metadata header, parent/child tree nav, panel switcher, rendered Markdown |
 | `NotFoundScreen` | (error fallback) | shown when a topic id doesn't resolve |
+
+`main.dart` resolves `VaultRepository.load()` and
+`UserProfileStorage().hasProfile()` together before the router is built, so
+`GoRouter`'s `initialLocation` can be set once to `/entry` or `/` — there's no
+runtime redirect logic, just a startup-time decision.
 
 ### Key widgets
 
@@ -90,7 +101,7 @@ KnowledgeHub-Flutter/
 | `TopicTreeNav` | parent / current / children links on a topic screen |
 | `PanelSelector` | chip row to switch between `_index.md` and sibling files |
 | `MarkdownView` | renders a panel body: GFM, syntax-highlighted code, bundled topic images |
-| `MetadataHeader` + `StatusBadge` + `TagChip` | topic title, draft/complete badge, tags, dates |
+| `MetadataHeader` + `ReadStatusBadge` + `TagChip` | topic title, per-user read status (Done/Draft + Mark as read, backed by KnowledgeHub-Api), tags, dates |
 
 ## State management
 
@@ -102,10 +113,17 @@ see ADR-009 in [DECISIONS.md](DECISIONS.md) for why this stays minimal.
 
 Navigation is `go_router`; routes match the table above.
 
-## No backend, ever
+## KnowledgeHub-Api (the one backend)
 
-If a future task seems to need a database, an API, or auth, stop and
-reconsider — the entire point of this architecture is "content is git,
-render is static, nothing to run except the app itself." Introducing a
-backend is a significant architecture change and should be raised with the
-user, not done unilaterally.
+`KnowledgeHub-Api/` is a .NET 10 minimal API with exactly two endpoints and
+one MongoDB collection (`topic_status`) — see its own
+[CLAUDE.md](../KnowledgeHub-Api/CLAUDE.md). Its entire job is per-`(email,
+topicId)` read tracking; it holds no content, no auth, no sessions. Vault
+content still ships the old way (baked JSON, rebuilt from `KnowledgeVault/`).
+
+If a future task seems to need *more* database, API surface, or auth beyond
+this narrow scope, stop and reconsider — this backend was added for one
+specific, user-requested feature, not as a green light to build out a
+general-purpose service layer. Expanding it meaningfully is a significant
+architecture change and should be raised with the user, not done
+unilaterally.

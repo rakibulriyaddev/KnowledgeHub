@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/vault_models.dart';
 import '../utils/format.dart';
-import 'status_badge.dart';
+import 'read_status_badge.dart';
 import 'tag_chip.dart';
 
 /// Mirrors components/MetadataHeader.tsx.
@@ -42,7 +42,7 @@ class MetadataHeader extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              StatusBadge(status: frontmatter.status),
+              ReadStatusBadge(topicId: frontmatter.id),
             ],
           ),
           if (frontmatter.tags.isNotEmpty) ...[
