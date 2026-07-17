@@ -15,12 +15,16 @@ the vault has schema errors — stop and report if so, don't proceed to build.
 ## Step 2 — Build release APK (arm64-v8a only)
 
 ```bash
-flutter build apk --release --target-platform android-arm64
+flutter build apk --release --target-platform android-arm64 --dart-define=API_BASE_URL=https://knowledgehub.ttzs.live
 ```
 
 arm64-v8a covers virtually all real Android phones since 2018; armeabi-v7a/
 x86/x86_64 in a universal build only bloat size for emulators/legacy
 devices. Output: `KnowledgeHub-Flutter/build/app/outputs/flutter-apk/app-release.apk`.
+
+`--dart-define=API_BASE_URL` is required — without it the app falls back to
+the emulator-only default (`http://10.0.2.2:5270`), which is unreachable
+from a real device and makes every status/mark-read call fail silently.
 
 ## Step 3 — Copy APK to a tracked path
 
