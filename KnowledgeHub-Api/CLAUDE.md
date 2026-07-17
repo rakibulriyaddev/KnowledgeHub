@@ -1,7 +1,8 @@
 # KnowledgeHub-Api
 
-.NET 10 minimal API backing per-user "topic read" tracking for the Flutter
-app. Read [`../CLAUDE.md`](../CLAUDE.md) first for the whole-repo picture.
+.NET 10 API (controller-based) backing per-user "topic read" tracking for
+the Flutter app. Read [`../CLAUDE.md`](../CLAUDE.md) first for the whole-repo
+picture.
 
 There is no auth — the app identifies a user by the email they entered once
 on the entry screen (see `KnowledgeHub-Flutter/lib/screens/entry_screen.dart`),
@@ -12,10 +13,13 @@ and that email is sent as plain payload on every call.
 - `GET /api/topic-status?topicId=...&email=...` → `{ "status": true|false }`
 - `POST /api/topic-status/mark-read` body `{ "topicId": "...", "email": "..." }`
   → upserts a document and returns `{ "status": true }`
+- `GET /health` → `{ "status": "ok" }` — liveness check, available in every
+  environment including after deployment (`Controllers/HealthController.cs`)
 
-Both read and write lowercase the email before touching Mongo (see
-`Services/TopicStatusService.cs`), so lookups are case-insensitive regardless
-of what the client sends.
+Both live in `Controllers/TopicStatusController.cs`, backed by
+`Services/TopicStatusService.cs`. Both read and write lowercase the email
+before touching Mongo, so lookups are case-insensitive regardless of what the
+client sends.
 
 ## Data
 
