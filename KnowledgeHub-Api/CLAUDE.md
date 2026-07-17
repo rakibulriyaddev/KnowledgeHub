@@ -28,8 +28,17 @@ client sends.
 Single Mongo collection `topic_status`. Document `_id` is
 `"{lowercase email}_{topicId}"` — naturally unique per user per topic, no
 separate email field or compound index needed. Connection string / database
-name come from the `Mongo` section of `appsettings.json` — point it at your
-own MongoDB instance.
+name come from the `Mongo` section of config.
+
+`appsettings.json` hardcodes `mongodb://localhost:27017` as the local-dev
+default — fine to keep tracked in git since it's not a real credential.
+`appsettings.Production.json` deliberately omits the `Mongo` section: ASP.NET
+Core's default config providers let environment variables override
+`appsettings.json` using the `Section__Key` convention, so production sets
+`Mongo__ConnectionString` and `Mongo__Database` as env vars (e.g. in the
+systemd unit) instead of committing a real connection string. Set
+`ASPNETCORE_ENVIRONMENT=Production` wherever this runs in production so
+`appsettings.Production.json` gets picked up.
 
 ## Running locally
 
