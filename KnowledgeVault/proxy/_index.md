@@ -2,10 +2,10 @@
 id: proxy
 title: "Proxy - The Intermediary Server"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-15
 tags: [infrastructure, security, traffic-distribution]
 parent: networking
-children: []
+children: [nginx, reverse-proxy]
 status: draft
 ---
 
