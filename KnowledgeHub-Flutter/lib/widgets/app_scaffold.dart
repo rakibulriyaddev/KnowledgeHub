@@ -26,32 +26,41 @@ class AppScaffold extends StatelessWidget {
     required this.body,
     this.title = 'KnowledgeHub',
     this.floatingActionButton,
+    this.showDrawer = true,
   });
 
   final Widget body;
   final String title;
   final Widget? floatingActionButton;
 
+  /// Also disables the AppBar's automatic leading widget — no drawer menu,
+  /// no back arrow. The tappable title is the only way back to home.
+  final bool showDrawer;
+
   @override
   Widget build(BuildContext context) {
     final themeController = context.watch<ThemeController>();
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(8),
+        automaticallyImplyLeading: showDrawer,
+        title: GestureDetector(
+          onTap: () => context.go('/'),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.menu_book_rounded, size: 16, color: Colors.white),
               ),
-              child: const Icon(Icons.menu_book_rounded, size: 16, color: Colors.white),
-            ),
-            Text(title),
-          ],
+              Text(title),
+            ],
+          ),
         ),
         actions: [
           IconButton(
@@ -67,32 +76,34 @@ class AppScaffold extends StatelessWidget {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: SafeArea(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              const DrawerHeader(
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Text(
-                    'KnowledgeHub',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
+      drawer: showDrawer
+          ? Drawer(
+              child: SafeArea(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    const DrawerHeader(
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Text(
+                          'KnowledgeHub',
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    for (final link in _navLinks)
+                      ListTile(
+                        title: Text(link.label),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          context.go(link.path);
+                        },
+                      ),
+                  ],
                 ),
               ),
-              for (final link in _navLinks)
-                ListTile(
-                  title: Text(link.label),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    context.go(link.path);
-                  },
-                ),
-            ],
-          ),
-        ),
-      ),
+            )
+          : null,
       body: body,
       floatingActionButton: floatingActionButton,
     );

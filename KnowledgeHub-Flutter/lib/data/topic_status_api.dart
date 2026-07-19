@@ -13,16 +13,16 @@ class ApiConfig {
 
 /// Client for the KnowledgeHub-Api per-user topic read status endpoints.
 class TopicStatusApi {
-  Future<bool> fetchStatus({required String topicId, required String email}) async {
+  Future<List<String>> fetchAllStatuses({required String email}) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}/api/topic-status').replace(
-      queryParameters: {'topicId': topicId, 'email': email},
+      queryParameters: {'email': email},
     );
     final response = await http.get(uri);
     if (response.statusCode != 200) {
       throw Exception('Failed to load status (${response.statusCode})');
     }
     final body = jsonDecode(response.body) as Map<String, dynamic>;
-    return body['status'] as bool;
+    return (body['topicIds'] as List<dynamic>).cast<String>();
   }
 
   Future<void> markRead({required String topicId, required String email}) async {

@@ -111,7 +111,8 @@ state or plain constructor-passed data from the `VaultRepository` singleton.
 reading progress) will need a real decision about where that state lives —
 don't reach for Bloc/Riverpod reflexively; consider whether it fits the
 existing "provider for one thing" pattern first, and record the choice here
-if it changes.
+if it changes. (Read status became the second such feature — see ADR-011 —
+still `provider`, no new state management library.)
 
 ### ADR-009 — Removed the Next.js web client
 
@@ -159,3 +160,35 @@ ripping them out would mean touching ~140 vault topic files for no
 functional gain. This backend is scoped narrowly to read-tracking; see the
 "KnowledgeHub-Api (the one backend)" section in ARCHITECTURE.md before
 expanding it.
+*(Schema superseded by ADR-011: one document per user instead of one per
+`(email, topicId)` pair. Endpoint request shapes are unchanged.)*
+
+### ADR-011 — Read status: one doc per user, on-device cache, indicators everywhere
+
+**Context:** ADR-010's one-doc-per-`(email, topicId)` model made "is this
+topic read" expensive to know anywhere except the detail page — there was
+no cheap way to get a user's whole read set, and every screen re-hit the API
+with no local caching.
+**Decision:** `UserTopicStatusDocument` replaces `TopicStatusDocument` —
+one Mongo doc per user (`_id` = lowercase email) holding `ReadTopicIds`, a
+plain list. `GET /api/topic-status?email=...` now returns the whole set
+(`{ topicIds: [...] }`); mark-read/unread use `$addToSet`/`$pull` against
+that array. No migration of old per-topic data — dropped and started fresh
+(personal, single-user app, not worth the migration code). On the Flutter
+side, `TopicStatusController` (a second `ChangeNotifier`, alongside
+`ThemeController` per ADR-008) holds the set in memory, mirrors it to
+`shared_preferences` (`TopicStatusCache`), and is hydrated once at startup
+(`main.dart`'s existing `_loadStartupData` gate) — cache first, API only if
+the cache is empty. Every mark-read/unread call hits the API first, then
+updates the shared in-memory set and the cache together, so the detail page
+badge, search results, and the topic tree all reflect the same state.
+`ReadStatusDot` (`lib/widgets/read_status_dot.dart`) is a small display-only
+indicator (filled green check = read, outline = unread) added to search
+result rows and topic tree nodes; toggling still only happens via the
+existing `ReadStatusBadge` button on the topic detail page — the list/tree
+dots are deliberately not tappable.
+**Consequence:** Reading the status of every topic on screen is now O(1)
+against an in-memory set instead of one API call per topic. The tradeoff is
+staleness: the cache is refreshed only at app startup and by user-initiated
+toggles, so a status changed on another device won't show up until the next
+cold start.

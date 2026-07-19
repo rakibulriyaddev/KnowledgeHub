@@ -10,25 +10,28 @@ and that email is sent as plain payload on every call.
 
 ## Endpoints
 
-- `GET /api/topic-status?topicId=...&email=...` → `{ "status": true|false }`
+- `GET /api/topic-status?email=...` → `{ "topicIds": ["...", ...] }` — every
+  topic id this user has marked read
 - `POST /api/topic-status/mark-read` body `{ "topicId": "...", "email": "..." }`
-  → upserts a document and returns `{ "status": true }`
+  → adds the id to the user's read set (upsert) and returns `{ "status": true }`
 - `POST /api/topic-status/mark-unread` body `{ "topicId": "...", "email": "..." }`
-  → upserts a document and returns `{ "status": false }`
+  → removes the id from the user's read set and returns `{ "status": false }`
 - `GET /health` → `{ "status": "ok" }` — liveness check, available in every
   environment including after deployment (`Controllers/HealthController.cs`)
 
-Both live in `Controllers/TopicStatusController.cs`, backed by
-`Services/TopicStatusService.cs`. Both read and write lowercase the email
+All three live in `Controllers/TopicStatusController.cs`, backed by
+`Services/TopicStatusService.cs`. Read and write both lowercase the email
 before touching Mongo, so lookups are case-insensitive regardless of what the
 client sends.
 
 ## Data
 
-Single Mongo collection `topic_status`. Document `_id` is
-`"{lowercase email}_{topicId}"` — naturally unique per user per topic, no
-separate email field or compound index needed. Connection string / database
-name come from the `Mongo` section of config.
+Single Mongo collection `topic_status`, one document per user. Document
+`_id` is the lowercase email; `ReadTopicIds` is the full list of topic ids
+that user has read (`Models/UserTopicStatusDocument.cs`). Mark-read/unread
+use `$addToSet`/`$pull` against that array, upserting the document if it
+doesn't exist yet. Connection string / database name come from the `Mongo`
+section of config.
 
 `appsettings.json` hardcodes `mongodb://localhost:27017` as the local-dev
 default — fine to keep tracked in git since it's not a real credential.
