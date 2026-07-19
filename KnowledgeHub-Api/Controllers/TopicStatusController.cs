@@ -8,10 +8,10 @@ namespace KnowledgeHub_Api.Controllers;
 public class TopicStatusController(TopicStatusService service) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetStatus([FromQuery] string topicId, [FromQuery] string email)
+    public async Task<IActionResult> GetStatus([FromQuery] string email)
     {
-        var status = await service.GetStatusAsync(topicId, email);
-        return Ok(new { status });
+        var topicIds = await service.GetReadTopicIdsAsync(email);
+        return Ok(new { topicIds });
     }
 
     [HttpPost("mark-read")]

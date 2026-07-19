@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../data/topic_status_api.dart';
+import '../data/topic_status_controller.dart';
 import '../data/user_profile_storage.dart';
 import '../theme/app_theme.dart';
 
 /// Per-user "have you read this topic" indicator, backed by KnowledgeHub-Api.
 /// Replaces the old frontmatter-driven `StatusBadge` — this is not the
 /// content-authoring draft/complete status, it's per-(email, topicId) state
-/// tracked server-side in MongoDB.
+/// tracked server-side in MongoDB and mirrored in `TopicStatusController`.
 class ReadStatusBadge extends StatefulWidget {
   const ReadStatusBadge({super.key, required this.topicId});
 
@@ -18,65 +19,21 @@ class ReadStatusBadge extends StatefulWidget {
 }
 
 class _ReadStatusBadgeState extends State<ReadStatusBadge> {
-  final _api = TopicStatusApi();
   final _storage = UserProfileStorage();
-  late Future<bool> _statusFuture;
   bool _marking = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _statusFuture = _load();
-  }
-
-  @override
-  void didUpdateWidget(covariant ReadStatusBadge oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.topicId != widget.topicId) {
-      setState(() => _statusFuture = _load());
-    }
-  }
-
-  // Unreachable API, any exception, or topic missing from the DB all read as
-  // unread — there's no partial/error state shown to the user, just false.
-  Future<bool> _load() async {
-    try {
-      final email = await _storage.getEmail();
-      return await _api.fetchStatus(topicId: widget.topicId, email: email ?? '');
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Future<void> _markRead() async {
+  Future<void> _toggle(bool currentlyRead) async {
+    final controller = context.read<TopicStatusController>();
     setState(() => _marking = true);
     try {
-      final email = await _storage.getEmail();
-      await _api.markRead(topicId: widget.topicId, email: email ?? '');
-      if (!mounted) return;
-      setState(() {
-        _marking = false;
-        _statusFuture = Future.value(true);
-      });
-    } catch (_) {
+      final email = await _storage.getEmail() ?? '';
+      if (currentlyRead) {
+        await controller.markUnread(widget.topicId, email);
+      } else {
+        await controller.markRead(widget.topicId, email);
+      }
       if (!mounted) return;
       setState(() => _marking = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Update status failed'), behavior: SnackBarBehavior.floating),
-      );
-    }
-  }
-
-  Future<void> _markUnread() async {
-    setState(() => _marking = true);
-    try {
-      final email = await _storage.getEmail();
-      await _api.markUnread(topicId: widget.topicId, email: email ?? '');
-      if (!mounted) return;
-      setState(() {
-        _marking = false;
-        _statusFuture = Future.value(false);
-      });
     } catch (_) {
       if (!mounted) return;
       setState(() => _marking = false);
@@ -88,36 +45,23 @@ class _ReadStatusBadgeState extends State<ReadStatusBadge> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: _statusFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          );
-        }
-
-        final isRead = snapshot.data ?? false;
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _Pill(isRead: isRead),
-            const SizedBox(width: 8),
-            _marking
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : TextButton(
-                    onPressed: isRead ? _markUnread : _markRead,
-                    child: Text(isRead ? 'Mark as unread' : 'Mark as read'),
-                  ),
-          ],
-        );
-      },
+    final isRead = context.watch<TopicStatusController>().isRead(widget.topicId);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _Pill(isRead: isRead),
+        const SizedBox(width: 8),
+        _marking
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : TextButton(
+                onPressed: () => _toggle(isRead),
+                child: Text(isRead ? 'Mark as unread' : 'Mark as read'),
+              ),
+      ],
     );
   }
 }

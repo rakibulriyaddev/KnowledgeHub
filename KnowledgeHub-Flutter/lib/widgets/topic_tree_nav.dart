@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
+import '../data/topic_status_controller.dart';
 import '../models/vault_models.dart';
+import 'read_status_dot.dart';
 
 /// Mirrors the TreeNav in components/TopicSidebar.tsx: parent link, current
 /// topic, and child links. Rendered inline (no desktop/mobile split — this
@@ -14,6 +17,7 @@ class TopicTreeNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final statusController = context.watch<TopicStatusController>();
     final labelStyle = theme.textTheme.labelSmall?.copyWith(
       fontWeight: FontWeight.w600,
       letterSpacing: 0.5,
@@ -27,7 +31,11 @@ class TopicTreeNav extends StatelessWidget {
         if (tree.parent != null) ...[
           Text('PARENT', style: labelStyle),
           const SizedBox(height: 4),
-          _NavTile(label: '↑ ${tree.parent!.title}', onTap: () => context.push('/topic/${tree.parent!.id}')),
+          _NavTile(
+            label: '↑ ${tree.parent!.title}',
+            isRead: statusController.isRead(tree.parent!.id),
+            onTap: () => context.push('/topic/${tree.parent!.id}'),
+          ),
           const SizedBox(height: 16),
         ],
         Text('CURRENT', style: labelStyle),
@@ -39,9 +47,17 @@ class TopicTreeNav extends StatelessWidget {
             color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text(
-            tree.current.title,
-            style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.primary),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  tree.current.title,
+                  style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.primary),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ReadStatusDot(isRead: statusController.isRead(tree.current.id)),
+            ],
           ),
         ),
         if (tree.children.isNotEmpty) ...[
@@ -49,7 +65,11 @@ class TopicTreeNav extends StatelessWidget {
           Text('CHILDREN', style: labelStyle),
           const SizedBox(height: 4),
           for (final child in tree.children)
-            _NavTile(label: '↳ ${child.title}', onTap: () => context.push('/topic/${child.id}')),
+            _NavTile(
+              label: '↳ ${child.title}',
+              isRead: statusController.isRead(child.id),
+              onTap: () => context.push('/topic/${child.id}'),
+            ),
         ],
       ],
     );
@@ -57,9 +77,10 @@ class TopicTreeNav extends StatelessWidget {
 }
 
 class _NavTile extends StatelessWidget {
-  const _NavTile({required this.label, required this.onTap});
+  const _NavTile({required this.label, required this.isRead, required this.onTap});
 
   final String label;
+  final bool isRead;
   final VoidCallback onTap;
 
   @override
@@ -69,7 +90,13 @@ class _NavTile extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Text(label),
+        child: Row(
+          children: [
+            Expanded(child: Text(label)),
+            const SizedBox(width: 8),
+            ReadStatusDot(isRead: isRead),
+          ],
+        ),
       ),
     );
   }

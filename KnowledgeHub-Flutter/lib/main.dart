@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'data/topic_status_controller.dart';
 import 'data/user_profile_storage.dart';
 import 'data/vault_repository.dart';
 import 'screens/about_screen.dart';
@@ -18,16 +19,20 @@ void main() {
 }
 
 class _StartupData {
-  const _StartupData(this.repository, this.hasProfile);
+  const _StartupData(this.repository, this.hasProfile, this.topicStatusController);
 
   final VaultRepository repository;
   final bool hasProfile;
+  final TopicStatusController topicStatusController;
 }
 
 Future<_StartupData> _loadStartupData() async {
   final repository = await VaultRepository.load();
-  final hasProfile = await UserProfileStorage().hasProfile();
-  return _StartupData(repository, hasProfile);
+  final storage = UserProfileStorage();
+  final hasProfile = await storage.hasProfile();
+  final topicStatusController = TopicStatusController();
+  await topicStatusController.hydrate(await storage.getEmail() ?? '');
+  return _StartupData(repository, hasProfile, topicStatusController);
 }
 
 /// Root widget. Mirrors app/layout.tsx: loads the vault once, then hosts
@@ -53,7 +58,10 @@ class KnowledgeHubApp extends StatelessWidget {
             );
           }
           final data = snapshot.data!;
-          return _RoutedApp(repository: data.repository, hasProfile: data.hasProfile);
+          return ChangeNotifierProvider.value(
+            value: data.topicStatusController,
+            child: _RoutedApp(repository: data.repository, hasProfile: data.hasProfile),
+          );
         },
       ),
     );

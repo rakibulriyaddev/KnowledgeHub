@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../data/search.dart';
+import '../data/topic_status_controller.dart';
 import '../models/vault_models.dart';
+import 'read_status_dot.dart';
 import 'tag_chip.dart';
 
 /// Search topics/tags with live fuzzy results. Mirrors components/SearchBar.tsx
@@ -86,6 +89,7 @@ class _SearchFieldState extends State<SearchField> {
                     separatorBuilder: (_, _) => Divider(height: 1, color: theme.dividerColor),
                     itemBuilder: (context, index) {
                       final entry = _results[index];
+                      final isRead = context.watch<TopicStatusController>().isRead(entry.id);
                       return ListTile(
                         title: Text(entry.title),
                         subtitle: entry.tags.isEmpty
@@ -97,6 +101,7 @@ class _SearchFieldState extends State<SearchField> {
                                   for (final tag in entry.tags.take(4)) TagChip(tag: tag),
                                 ],
                               ),
+                        trailing: ReadStatusDot(isRead: isRead),
                         onTap: () => _onSelect(entry.id),
                       );
                     },

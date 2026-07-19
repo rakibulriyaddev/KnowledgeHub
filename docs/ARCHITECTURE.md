@@ -102,24 +102,28 @@ runtime redirect logic, just a startup-time decision.
 | `PanelSelector` | chip row to switch between `_index.md` and sibling files |
 | `MarkdownView` | renders a panel body: GFM, syntax-highlighted code, bundled topic images |
 | `MetadataHeader` + `ReadStatusBadge` + `TagChip` | topic title, per-user read status (Done/Draft + Mark as read, backed by KnowledgeHub-Api), tags, dates |
+| `ReadStatusDot` | display-only read/unread indicator on search result rows and `TopicTreeNav` nodes |
 
 ## State management
 
-`provider`'s `ChangeNotifierProvider` is used for exactly one thing —
-`ThemeController` (persisted light/dark/system preference). Everything else
-is local `StatefulWidget` state or plain data passed down from the
-`VaultRepository` singleton, loaded once in `main.dart`. No Riverpod/Bloc —
-see ADR-009 in [DECISIONS.md](DECISIONS.md) for why this stays minimal.
+`provider`'s `ChangeNotifierProvider` is used for two cross-cutting
+concerns: `ThemeController` (persisted light/dark/system preference) and
+`TopicStatusController` (the user's read-topic-id set, hydrated once at
+startup and shared by the detail page badge, search results, and the topic
+tree). Everything else is local `StatefulWidget` state or plain data passed
+down from the `VaultRepository` singleton, loaded once in `main.dart`. No
+Riverpod/Bloc — see ADR-008 in [DECISIONS.md](DECISIONS.md) for why this
+stays minimal.
 
 Navigation is `go_router`; routes match the table above.
 
 ## KnowledgeHub-Api (the one backend)
 
-`KnowledgeHub-Api/` is a .NET 10 minimal API with exactly two endpoints and
-one MongoDB collection (`topic_status`) — see its own
-[CLAUDE.md](../KnowledgeHub-Api/CLAUDE.md). Its entire job is per-`(email,
-topicId)` read tracking; it holds no content, no auth, no sessions. Vault
-content still ships the old way (baked JSON, rebuilt from `KnowledgeVault/`).
+`KnowledgeHub-Api/` is a .NET 10 minimal API with three endpoints and one
+MongoDB collection (`topic_status`, one document per user) — see its own
+[CLAUDE.md](../KnowledgeHub-Api/CLAUDE.md). Its entire job is per-user read
+tracking; it holds no content, no auth, no sessions. Vault content still
+ships the old way (baked JSON, rebuilt from `KnowledgeVault/`).
 
 If a future task seems to need *more* database, API surface, or auth beyond
 this narrow scope, stop and reconsider — this backend was added for one
