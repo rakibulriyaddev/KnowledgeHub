@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -43,23 +44,27 @@ class AppScaffold extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: showDrawer,
-        title: GestureDetector(
+        title: InkWell(
+          borderRadius: BorderRadius.circular(8),
           onTap: () => context.go('/'),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                margin: const EdgeInsets.only(right: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.menu_book_rounded, size: 16, color: Colors.white),
                 ),
-                child: const Icon(Icons.menu_book_rounded, size: 16, color: Colors.white),
-              ),
-              Text(title),
-            ],
+                Text(title),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -67,12 +72,21 @@ class AppScaffold extends StatelessWidget {
             tooltip: themeController.isDark(context)
                 ? 'Switch to light mode'
                 : 'Switch to dark mode',
-            icon: Icon(
-              themeController.isDark(context)
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 320),
+              transitionBuilder: (child, animation) => RotationTransition(
+                turns: Tween<double>(begin: 0.75, end: 1).animate(animation),
+                child: FadeTransition(opacity: animation, child: child),
+              ),
+              child: Icon(
+                themeController.isDark(context) ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                key: ValueKey(themeController.isDark(context)),
+              ),
             ),
-            onPressed: () => themeController.toggle(context),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              themeController.toggle(context);
+            },
           ),
         ],
       ),

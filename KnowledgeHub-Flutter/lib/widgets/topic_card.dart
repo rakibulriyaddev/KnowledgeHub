@@ -36,10 +36,16 @@ class TopicCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    entry.title,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
+                  child: Hero(
+                    tag: 'topic-title-${entry.id}',
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: Text(
+                        entry.title,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                 ),

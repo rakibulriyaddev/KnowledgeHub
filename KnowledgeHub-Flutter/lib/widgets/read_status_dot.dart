@@ -12,10 +12,18 @@ class ReadStatusDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(
-      isRead ? Icons.check_circle : Icons.radio_button_unchecked,
-      size: 18,
-      color: isRead ? AppColors.green500 : Theme.of(context).colorScheme.outline,
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      transitionBuilder: (child, animation) => ScaleTransition(
+        scale: animation,
+        child: FadeTransition(opacity: animation, child: child),
+      ),
+      child: Icon(
+        isRead ? Icons.check_circle : Icons.radio_button_unchecked,
+        key: ValueKey(isRead),
+        size: 18,
+        color: isRead ? AppColors.green500 : Theme.of(context).colorScheme.outline,
+      ),
     );
   }
 }

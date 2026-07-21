@@ -70,7 +70,11 @@ class _TopicScreenState extends State<TopicScreen> {
             active: _active,
             onSelect: (name) => setState(() => _active = name),
           ),
-          MarkdownView(body: activePanel.body),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+            child: MarkdownView(key: ValueKey(activePanel.name), body: activePanel.body),
+          ),
         ],
       ),
     );

@@ -17,6 +17,12 @@ class ExploreScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Icon(
+                Icons.explore_outlined,
+                size: 64,
+                color: theme.colorScheme.primary.withValues(alpha: 0.35),
+              ),
+              const SizedBox(height: 16),
               Text('Explore', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               Text(
