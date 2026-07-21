@@ -2,7 +2,7 @@
 id: oop
 title: "Object-Oriented Programming"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [programming, paradigm, software-design]
 parent: null
 children: [design-patterns, solid-principles, encapsulation, polymorphism, inheritance, abstraction]
@@ -10,37 +10,37 @@ status: draft
 ---
 
 ## Overview
-Object-Oriented Programming (OOP) is a paradigm that models software as interacting objects — bundles of state and behavior — rather than as a sequence of procedures acting on data. It underlies most mainstream enterprise languages (Java, C#, C++, Python) and gives rise to the vocabulary (classes, interfaces, polymorphism) that design patterns and SOLID principles build on.
+Object-Oriented Programming (OOP) is a style of coding that models software as objects — pieces holding both state and behavior — instead of a list of steps acting on data. It is behind most major business languages (Java, C#, C++, Python), and it gives us the words (classes, interfaces, polymorphism) that design patterns and SOLID principles build on.
 
 ## Key Concepts
-- Encapsulation — bundling state with the behavior that operates on it, hiding internals behind an interface
-- Inheritance — reusing and specializing behavior through a type hierarchy
-- Polymorphism — one interface, many implementations, resolved at compile- or run-time
-- Abstraction — modeling only the relevant properties of a real-world concept
-- Composition vs inheritance — assembling behavior from parts vs extending a base type
+- Encapsulation — keeping state together with the behavior that works on it, hiding the inside behind an interface
+- Inheritance — reusing and adjusting behavior through a chain of types
+- Polymorphism — one interface, many versions, picked at build-time or run-time
+- Abstraction — modeling only the parts of a real-world thing that matter
+- Composition vs inheritance — building behavior from parts vs extending a base type
 
 ## Core Knowledge
-- "Favor composition over inheritance" — deep inheritance hierarchies are brittle and hard to change; composition is more flexible
-- Polymorphism comes in two flavors — subtype (interface/virtual dispatch) and parametric (generics) — interviews usually mean the former
-- Encapsulation is about invariants, not just making fields private — a getter/setter pair on every field defeats the purpose
-- The "fragile base class" problem — changing a base class can silently break subclasses that depend on its implementation details
-- OOP and functional programming aren't mutually exclusive — modern languages mix objects with immutability and first-class functions
-- Interfaces define a contract without implementation; abstract classes can share partial implementation — choice affects extensibility
-- Overuse of inheritance for code reuse (rather than true "is-a" relationships) is a common design smell
-- SOLID principles and GoF design patterns exist specifically to keep OOP codebases maintainable as they grow
+- "Favor composition over inheritance" — deep chains of inheritance are fragile and hard to change; composition is more flexible
+- Polymorphism comes in two forms — subtype (interface/virtual dispatch) and parametric (generics) — interviews usually mean the first one
+- Encapsulation is about keeping rules true, not just making fields private — a getter/setter on every field misses the point
+- The "fragile base class" problem — changing a base class can quietly break subclasses that rely on how it used to work
+- OOP and functional programming aren't opposites — modern languages mix objects with unchanging values and functions as data
+- Interfaces set a rule with no code; abstract classes can share some code — the choice affects how easy things are to extend later
+- Using inheritance just to reuse code (instead of a true "is-a" link) is a common design mistake
+- SOLID principles and GoF design patterns exist to keep OOP code easy to manage as it grows
 
 ## Interview Questions
 **Q:** What are the four pillars of OOP?
 **A:** Encapsulation, inheritance, polymorphism, abstraction.
 
-**Q:** When would you choose composition over inheritance?
-**A:** When the relationship is "has-a" rather than "is-a", or when you need to change behavior at runtime — composition avoids locking a class into a rigid hierarchy.
+**Q:** When would you pick composition over inheritance?
+**A:** When the link is "has-a" rather than "is-a," or when you need to change behavior while the program runs — composition avoids locking a class into a rigid chain.
 
 **Q:** What's the difference between an abstract class and an interface?
-**A:** An abstract class can hold shared state and partial implementation; an interface defines a pure contract with no implementation (default methods aside) and supports multiple inheritance of type.
+**A:** An abstract class can hold shared state and some working code; an interface sets a pure rule with no code (aside from default methods) and lets a class follow more than one at once.
 
 **Q:** What's the fragile base class problem?
-**A:** A change to a base class's internals breaks derived classes that implicitly relied on its old behavior, even though the public contract didn't change.
+**A:** A change to a base class's inner workings breaks classes built on it that quietly relied on its old behavior, even though its public rule didn't change.
 
 ## Scenario
-A team building a shape-drawing app starts with a `Shape` base class holding a `draw()` method, then keeps adding subclasses and special-casing behavior as new shape types arrive, and the hierarchy grows tangled. Recognizing the need for per-shape behavior without rigid subclassing points toward composing shapes from smaller behaviors (e.g. a `Renderer` strategy) instead of deepening the inheritance tree.
+A team building a shape-drawing app starts with a `Shape` base class holding a `draw()` method, then keeps adding subclasses and special cases as new shape types show up, and the chain grows messy. Seeing the need for per-shape behavior without a rigid chain of subclasses points toward building shapes from smaller pieces of behavior (e.g. a `Renderer` strategy) instead of making the inheritance chain deeper.

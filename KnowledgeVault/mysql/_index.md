@@ -2,7 +2,7 @@
 id: mysql
 title: "MySQL"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [data, storage, sql]
 parent: structured-database
 children: []
@@ -13,42 +13,42 @@ status: draft
 
 ## Overview
 
-MySQL is an open-source relational database prized for simplicity, read-heavy performance, and ubiquity in web application stacks (the M in LAMP). Its defining trait among relational engines is a pluggable storage engine architecture — InnoDB today, but historically MyISAM and others — which shapes many of its behavioral quirks compared to Postgres.
+MySQL is an open-source relational database valued for being simple, fast at reads, and used everywhere in web app stacks (the M in LAMP). What sets it apart from other relational engines is its pluggable storage engine setup — InnoDB today, but MyISAM and others in the past — which explains many of its quirks compared to Postgres.
 
 ## Key Concepts
 
 - **Storage engine** — pluggable layer (InnoDB by default) determining transaction support, locking, and crash recovery behavior
 - **InnoDB** — the default transactional storage engine: MVCC, row-level locking, foreign keys, crash recovery
-- **Replication** — binlog-based, historically asynchronous by default, widely used for read replicas
-- **Clustered primary key** — InnoDB physically orders table data by primary key, unlike Postgres's heap tables
-- **Query cache (deprecated/removed)** — historical result-caching feature removed in MySQL 8 due to scalability limits
+- **Replication** — based on the binlog, async by default in the past, widely used for read replicas
+- **Clustered primary key** — InnoDB physically stores table data in primary key order, unlike Postgres's heap tables
+- **Query cache (removed)** — an old result-caching feature, dropped in MySQL 8 because it did not scale well
 - **Default isolation level** — repeatable read (InnoDB), differing from Postgres's read committed default
 
 ## Core Knowledge
 
-- InnoDB's clustered primary key means the table's physical row order follows the primary key — a poorly chosen (e.g. random) primary key causes the same page-split/fragmentation issues discussed generically for B-trees, directly on the table itself
-- Default isolation is repeatable read, not read committed — this changes which concurrency anomalies are possible out of the box compared to Postgres, and surprises engineers moving between the two
-- Binlog-based replication (statement-based, row-based, or mixed) is simple to set up and battle-tested, historically async by default — semisynchronous/synchronous options exist but aren't the default
-- Storage engine choice matters even though InnoDB dominates today: legacy MyISAM tables lack transactions and crash safety, a common source of confusion in older codebases
-- MySQL historically permitted looser type coercion and stricter-mode opt-outs (before strict SQL mode became default) — schema behavior can surprise engineers expecting Postgres-level enforcement
-- Read replica scaling is a well-trodden, simple pattern in the MySQL ecosystem, often the first horizontal scaling step reached for before sharding
-- Full-text search and JSON support exist but are generally considered less mature/less flexible than Postgres's equivalents (GIN indexes, JSONB) — not a primary reason to choose MySQL
-- Auto-increment primary keys pair naturally with InnoDB's clustered storage, reinforcing sequential-insert-friendly design as the path of least resistance
+- InnoDB's clustered primary key means the table's physical row order follows the primary key. A poorly chosen key (for example, a random one) causes the same page-split and fragmentation problems seen generally with B-trees, but directly on the table itself
+- The default isolation level is repeatable read, not read committed — this changes which concurrency problems can happen out of the box compared to Postgres, and it surprises engineers moving between the two databases
+- Replication based on the binlog (statement-based, row-based, or mixed) is simple to set up and well-tested, and was async by default in the past. Semisynchronous and synchronous options exist, but they are not the default
+- Storage engine choice still matters, even though InnoDB is now used almost everywhere: old MyISAM tables have no transactions and no crash safety, which is a common source of confusion in older codebases
+- MySQL used to allow looser type conversion and ways to opt out of strict rules (before strict SQL mode became the default). This schema behavior can surprise engineers who expect Postgres-level enforcement
+- Scaling with read replicas is a common, well-known pattern in the MySQL world, often the first horizontal scaling step teams reach for before sharding
+- Full-text search and JSON support exist in MySQL, but are generally seen as less mature and less flexible than Postgres's versions (GIN indexes, JSONB) — not a main reason to pick MySQL
+- Auto-increment primary keys fit naturally with InnoDB's clustered storage, making a design friendly to inserts in order the easiest path to take
 
 ## Interview Questions
 
 **Q:** What's the practical effect of InnoDB's clustered primary key?
-**A:** Table rows are physically stored in primary key order, so range scans on the primary key are fast, but a randomly ordered key (UUID) causes the same fragmentation problems as a clustered B-tree index elsewhere.
+**A:** Table rows are physically stored in primary key order, so range scans on the primary key are fast. But a randomly ordered key (like a UUID) causes the same fragmentation problems as a clustered B-tree index would elsewhere.
 
 **Q:** How does MySQL's default isolation level differ from Postgres's?
-**A:** InnoDB defaults to repeatable read; Postgres defaults to read committed — meaning out-of-the-box concurrency anomaly behavior differs between the two even for equivalent application code.
+**A:** InnoDB defaults to repeatable read, while Postgres defaults to read committed — meaning out-of-the-box concurrency behavior differs between the two, even for the same application code.
 
 **Q:** Why does storage engine choice matter in MySQL specifically?
-**A:** Different engines (InnoDB vs legacy MyISAM) offer fundamentally different guarantees — transactions, row-level locking, and crash recovery are InnoDB features not present in older engine choices still found in legacy schemas.
+**A:** Different engines (InnoDB vs old MyISAM) give fundamentally different guarantees — transactions, row-level locking, and crash recovery are InnoDB features not found in older engines still used in legacy schemas.
 
 **Q:** What's the typical first horizontal scaling step for a MySQL-backed application?
-**A:** Adding binlog-based read replicas to offload read traffic — a simple, well-established pattern reached for before more complex sharding solutions.
+**A:** Adding binlog-based read replicas to take read traffic off the main server — a simple, well-known pattern used before reaching for more complex sharding.
 
 ## Scenario
 
-A team migrates a legacy application still using MyISAM tables and discovers that a crash during a bulk update left the table in a partially updated, non-transactional state with no way to roll back. Migrating those tables to InnoDB brings transactional guarantees and crash recovery, and the same operation afterward either fully commits or rolls back cleanly, closing the exact gap that caused the original incident.
+A team moves a legacy app that still uses MyISAM tables, and finds that a crash during a bulk update left the table half-updated, with no transactions and no way to roll back. Moving those tables to InnoDB brings transaction guarantees and crash recovery. Now, the same operation either fully commits or rolls back cleanly, closing the exact gap that caused the original problem.

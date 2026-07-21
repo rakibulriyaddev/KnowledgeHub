@@ -2,7 +2,7 @@
 id: command-pattern
 title: "Command Pattern"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [programming, oop, architecture]
 parent: behavioral-patterns
 children: []
@@ -10,7 +10,7 @@ status: draft
 ---
 
 ## Overview
-Command encapsulates a request or action as a standalone object, decoupling the object that invokes an operation from the one that knows how to perform it. Turning actions into first-class objects unlocks capabilities a plain method call can't provide — queuing, logging, and undo.
+Command wraps up a request or action as its own object, separating the object that starts an action from the one that knows how to do it. Turning actions into full objects lets you do things a plain method call can't — queuing, logging, and undo.
 
 ## Key Concepts
 - Command interface — typically a single `execute()` method
@@ -19,26 +19,26 @@ Command encapsulates a request or action as a standalone object, decoupling the 
 - Receiver — the object that performs the real work when the command executes
 
 ## Core Knowledge
-- Encapsulating a request as an object enables deferred execution, queuing, logging, and undo/redo — none of which a direct method call supports
-- Undo is implemented by having each command also support an inverse operation (`undo()`), often requiring the command to store enough state to reverse itself
-- Macro commands (a command composed of a list of other commands) let composite operations be treated identically to atomic ones
-- Invoker and receiver are fully decoupled — the invoker (e.g. a UI button or menu item) doesn't need to know what a command does, only that it can `execute()`
-- Command queues/logs enable features like transaction replay, batch processing, or crash recovery by replaying logged commands
-- In languages with first-class functions, simple commands can be closures instead of a full command class hierarchy — formal Command classes are more valuable when undo, queuing, or serialization are needed
-- Overkill for simple, one-off actions with no need for undo, queuing, or logging — direct method calls are simpler there
+- Wrapping a request as an object lets you delay running it, queue it, log it, and undo or redo it — a direct method call cannot do any of this
+- Undo works by giving each command an opposite action too (`undo()`), which often means the command must store enough state to reverse itself
+- Macro commands (a command made of a list of other commands) let a group of actions be treated just like a single action
+- The invoker and the receiver are fully separate — the invoker (like a UI button or menu item) does not need to know what a command does, only that it can call `execute()`
+- Command queues or logs allow features like replaying transactions, batch processing, or recovering from a crash by running the logged commands again
+- In languages that support first-class functions, simple commands can just be closures instead of a full set of Command classes — real Command classes matter more when you need undo, queuing, or serialization
+- This is too much for simple, one-time actions that don't need undo, queuing, or logging — a direct method call is simpler there
 
 ## Interview Questions
 **Q:** What capability does Command provide that a direct method call doesn't?
-**A:** It turns an action into an object that can be queued, logged, deferred, composed, or undone — none of which a plain method call supports.
+**A:** It turns an action into an object that can be queued, logged, delayed, combined, or undone — none of which a plain method call can do.
 
 **Q:** How is undo typically implemented with Command?
-**A:** Each command also implements an inverse operation and stores whatever state it needs to reverse its effect, so an undo stack can call `undo()` on previously executed commands.
+**A:** Each command also has an opposite action and stores whatever state it needs to undo its effect, so an undo stack can call `undo()` on commands that already ran.
 
 **Q:** What's a macro command?
-**A:** A command composed of a sequence of other commands, executed as one unit — letting composite operations be treated the same as atomic ones.
+**A:** A command made of a sequence of other commands, run as one unit — letting a group of actions be treated the same as a single action.
 
 **Q:** When is a full Command class hierarchy unnecessary?
-**A:** For simple actions with no need for undo, queuing, logging, or deferred execution — a direct function call or closure is simpler.
+**A:** For simple actions that don't need undo, queuing, logging, or delayed running — a plain function call or closure is simpler.
 
 ## Scenario
-A text editor needs undo/redo across arbitrary sequences of user actions (typing, deleting, formatting). Each user action is wrapped as a Command object storing what's needed to reverse it, pushed onto an undo stack as it executes — undo simply pops and calls `undo()` on the most recent command, regardless of what specific action it was.
+A text editor needs undo/redo across any sequence of user actions (typing, deleting, formatting). Each user action is wrapped as a Command object that stores what it needs to reverse itself, and is pushed onto an undo stack as it runs — undo just pops the last command off the stack and calls `undo()` on it, no matter what the action actually was.

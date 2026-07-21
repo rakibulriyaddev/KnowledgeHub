@@ -2,7 +2,7 @@
 id: acid
 title: "ACID"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [data, storage, transaction]
 parent: database-transaction
 children: []
@@ -13,42 +13,42 @@ status: draft
 
 ## Overview
 
-ACID is the set of guarantees — Atomicity, Consistency, Isolation, Durability — that a transaction provides so multi-step database operations behave predictably under failures and concurrency. Isolation has enough depth to warrant its own page; this one goes deeper on the other three: what Atomicity, Consistency, and Durability actually guarantee mechanically, and where each can quietly fail in practice.
+ACID is the set of guarantees — Atomicity, Consistency, Isolation, Durability — that a transaction gives so multi-step database actions work as expected under failures and many things happening at once. Isolation has enough depth for its own page; this one goes deeper on the other three: what Atomicity, Consistency, and Durability really guarantee, and where each can quietly fail in real use.
 
 ## Key Concepts
 
-- **Atomicity** — all-or-nothing execution; no partial application of a transaction's writes
-- **Consistency** — a transaction moves the database from one valid state to another, respecting constraints
-- **Durability** — once committed, a transaction's effects survive any subsequent crash
-- **Write-ahead log (WAL)** — durability mechanism recording changes before they're applied to data files
-- **Constraint enforcement** — the engine-level rules (foreign key, unique, check) that back consistency
-- **fsync / flush to disk** — the actual point at which a write becomes durable, not just buffered
+- **Atomicity** — all-or-nothing action; no half-finished writes from a transaction
+- **Consistency** — a transaction moves the database from one valid state to another, following the rules
+- **Durability** — once saved, a transaction's changes survive any crash that comes after
+- **Write-ahead log (WAL)** — durability method that records changes before they're applied to data files
+- **Rule enforcement** — the database-level rules (foreign key, unique, check) that back consistency
+- **fsync / flush to disk** — the real moment a write becomes durable, not just held in memory
 
 ## Core Knowledge
 
-- Atomicity is implemented via undo/rollback mechanisms — a crash mid-transaction is detected on recovery and incomplete changes are reverted, not left half-applied
-- Consistency in ACID means constraint consistency (foreign keys, uniqueness, checks hold), not "the data is logically correct" — a transaction can commit valid-but-wrong business data and still be ACID-consistent
-- Durability is only as strong as the actual write path: many engines buffer writes and only guarantee durability after an fsync to disk, and misconfigured settings (e.g. disabled fsync for speed) silently weaken this
-- Write-ahead logging is the common mechanism behind both atomicity and durability — changes are logged sequentially before being applied, so recovery can replay or undo based on the log
-- A committed transaction surviving a crash depends on the storage layer actually flushing to durable media — a write acknowledged by the OS page cache but not yet on disk is not truly durable
-- Replication adds another durability dimension: synchronous replication to another node before acknowledging a commit protects against single-node data loss that WAL alone can't
-- Turning off durability guarantees (e.g. asynchronous commit, disabled fsync) trades a small chance of losing recent commits on crash for meaningfully higher write throughput — a deliberate tradeoff, not a bug
-- Atomicity applies per-transaction, not across transactions — two separate transactions each individually atomic can still leave data inconsistent relative to each other without proper isolation
+- Atomicity is built using undo/rollback methods — a crash in the middle of a transaction is caught on restart, and unfinished changes are undone, not left half-done
+- Consistency in ACID means the rules hold (foreign keys, uniqueness, checks) — not "the data is logically right." A transaction can save valid-but-wrong business data and still count as ACID-consistent
+- Durability is only as strong as the real write path: many engines hold writes in memory and only make them durable after an fsync to disk, and wrong settings (like turning off fsync for speed) quietly weaken this
+- Write-ahead logging is the common method behind both atomicity and durability — changes are written down in order before being applied, so restart can redo or undo based on the log
+- A saved transaction surviving a crash depends on the storage layer really writing to disk — a write confirmed by the OS's memory cache but not yet on disk is not truly durable
+- Copying data to other machines (replication) adds another layer of safety: waiting for another node to confirm a write before saying it's done protects against data loss on one machine that WAL alone can't stop
+- Turning off durability guarantees (like async commit, disabled fsync) trades a small chance of losing recent saves on crash for much higher write speed — a choice made on purpose, not a bug
+- Atomicity applies to one transaction at a time, not across transactions — two separate transactions, each fine on their own, can still leave data out of step with each other without proper isolation
 
 ## Interview Questions
 
-**Q:** What does "consistency" mean in ACID, precisely?
-**A:** The transaction leaves the database satisfying its declared constraints (foreign keys, uniqueness, checks) — it does not mean the data is business-logically correct, only structurally valid.
+**Q:** What does "consistency" mean in ACID, exactly?
+**A:** The transaction leaves the database following its stated rules (foreign keys, uniqueness, checks) — it does not mean the data is right for the business, only that it's structurally valid.
 
-**Q:** How does a database implement atomicity across a crash?
-**A:** Via a write-ahead log recording intended changes before applying them, so recovery can detect an incomplete transaction and undo its partial effects.
+**Q:** How does a database keep atomicity across a crash?
+**A:** With a write-ahead log that records planned changes before applying them, so restart can spot an unfinished transaction and undo its partial effects.
 
-**Q:** Is an acknowledged commit always durable?
-**A:** Only if the write actually reached persistent storage (fsync'd) — if durability settings are relaxed for performance, a crash shortly after commit can lose that transaction.
+**Q:** Is a confirmed save always durable?
+**A:** Only if the write really reached lasting storage (fsync'd) — if durability settings are relaxed for speed, a crash right after saving can lose that transaction.
 
-**Q:** Why would a team deliberately disable synchronous fsync on commit?
-**A:** To trade a small window of potential data loss on crash for significantly higher write throughput — acceptable when the workload tolerates losing the last few commits, not when it can't.
+**Q:** Why would a team choose to turn off synchronous fsync on commit?
+**A:** To trade a small chance of losing data on crash for much higher write speed — fine when the workload can lose the last few saves, not fine when it can't.
 
 ## Scenario
 
-A team disables synchronous commit to boost write throughput on a high-volume logging service, and after an unexpected power loss, the last few seconds of writes that were acknowledged to callers turn out to be missing on restart. The tradeoff was appropriate for that workload — logs tolerate small gaps — but the same configuration on a payments table would have silently lost confirmed financial transactions, illustrating that durability is a configurable guarantee, not an unconditional one.
+A team turns off synchronous commit to boost write speed on a high-volume logging service, and after a sudden power loss, the last few seconds of writes that were confirmed to callers turn out missing on restart. The trade was fine for that workload — logs can handle small gaps — but the same setup on a payments table would have quietly lost confirmed money transactions. This shows that durability is a setting you can adjust, not an unconditional promise.

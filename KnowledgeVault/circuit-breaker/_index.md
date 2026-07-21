@@ -2,7 +2,7 @@
 id: circuit-breaker
 title: "Circuit Breaker Pattern"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [resilience, fault-tolerance, distributed-systems, microservices]
 parent: reliability-security
 children: []
@@ -11,11 +11,11 @@ status: draft
 
 ## Overview
 
-A circuit breaker wraps calls to a dependency so that once a failure threshold is crossed, calls stop automatically instead of piling up and cascading through the system. Popularized by Michael Nygard's *Release It!* (2007), it's the software equivalent of an electrical circuit breaker: trip early, protect the rest of the house.
+A circuit breaker wraps calls to another service so that once too many calls fail, calls stop automatically instead of piling up and spreading trouble through the system. Made popular by Michael Nygard's *Release It!* (2007), it works like an electrical circuit breaker: trip early, and protect the rest of the house.
 
 ## Key Concepts
 
-- Cascading failure — one slow/failing service exhausts callers' threads and connection pools, taking down the whole chain.
+- Cascading failure — one slow or failing service uses up all of its callers' threads and connections, and pulls down the whole chain.
 - Three states — Closed (normal), Open (fast-fail), Half-Open (testing recovery).
 - Fast fail — instant error instead of waiting for a timeout.
 - Fallback strategy — what to return while the circuit is open.
@@ -23,25 +23,25 @@ A circuit breaker wraps calls to a dependency so that once a failure threshold i
 
 ## Core Knowledge
 
-Without protection, Service A calling a failing Service B waits until timeout, fills its thread/connection pool, and stops accepting new requests — a domino effect that takes down upstream callers too. A circuit breaker prevents this with a three-state machine. In **Closed**, requests pass through normally while failures are counted; crossing a threshold (e.g., 50% failures over 10 requests) trips it to **Open**, where all calls fail immediately without reaching the service. After a timeout (e.g., 30s), it moves to **Half-Open**, letting a limited number of trial requests through — success returns to Closed, failure goes back to Open.
+Without protection, if Service A calls a failing Service B, it waits until it times out, fills up its own threads and connections, and stops taking new requests — a domino effect that also takes down whatever calls Service A. A circuit breaker stops this with three states. In **Closed**, requests pass through as normal while failures are counted. Once failures cross a limit (say, 50% of the last 10 requests), it trips to **Open**, where all calls fail right away without even reaching the service. After a wait (say, 30 seconds), it moves to **Half-Open**, letting a small number of test requests through — if they succeed, it goes back to Closed; if they fail, it goes back to Open.
 
-**Note:** a circuit breaker is not a retry — retry keeps attempting the same call, while a breaker blocks calls entirely for a period.
+**Note:** a circuit breaker is not the same as a retry — a retry keeps trying the same call, while a breaker blocks all calls for a while.
 
-Key configuration knobs: failure threshold, timeout duration (open → half-open), success threshold (half-open → closed), and the time window over which failure rate is measured. While open, callers need a fallback: a default value, cached response, empty response, honest error, or an alternative service. Popular implementations include Resilience4j (Java, the modern standard), the now-deprecated Hystrix (Netflix, the pioneer), Polly (.NET), opossum (Node.js), and built-in support in service meshes like Istio.
+Key settings: the failure limit, the wait time before moving from open to half-open, the success count needed to move from half-open to closed, and the time window used to measure the failure rate. While open, callers need a fallback: a default value, a cached response, an empty response, an honest error, or a different service to call instead. Popular tools that do this include Resilience4j (Java, the modern standard), the now-retired Hystrix (Netflix, the first well-known one), Polly (.NET), opossum (Node.js), and built-in support in service meshes like Istio.
 
-Best practice is one circuit breaker per dependency (not a single global one), combined with retry (with exponential backoff + jitter), timeouts, and bulkheads (isolated resource pools) for full resilience. Common mistakes: overly aggressive thresholds that trip on minor blips, missing fallbacks, and no monitoring — an open circuit can silently stay open indefinitely without alerting.
+Good practice is one circuit breaker per dependency (not one big global one), combined with retry (with growing wait times and jitter), timeouts, and bulkheads (separate resource pools) for full protection. Common mistakes: limits set too low so it trips on small blips, missing fallbacks, and no monitoring — an open circuit can quietly stay open forever with no alert.
 
 ## Interview Questions
 
 **Q: What are the three states of a circuit breaker and how do they transition?**
-A: Closed (normal, tracking failures) trips to Open on threshold breach; Open fast-fails all calls until a timeout elapses, moving to Half-Open; Half-Open allows trial requests — success returns to Closed, failure returns to Open.
+A: Closed (normal, counting failures) trips to Open when the limit is crossed; Open fast-fails all calls until a wait time passes, then moves to Half-Open; Half-Open lets test requests through — success goes back to Closed, failure goes back to Open.
 
 **Q: How is a circuit breaker different from a simple retry?**
-A: Retry re-attempts the same failing call, often making things worse under sustained failure; a circuit breaker detects repeated failure and blocks calls entirely for a period, protecting both caller and callee. They're typically combined.
+A: A retry tries the same failing call again, which can make things worse under long failure; a circuit breaker notices repeated failure and blocks calls entirely for a while, protecting both caller and callee. They are often used together.
 
 **Q: Why should each dependency have its own circuit breaker instead of one global breaker?**
-A: A single global breaker is all-or-nothing — one failing dependency trips protection for unrelated calls too. Per-dependency breakers isolate failures precisely.
+A: One global breaker is all-or-nothing — one failing dependency would block protection for unrelated calls too. Separate breakers per dependency isolate failures precisely.
 
 ## Scenario
 
-An e-commerce product page calls a recommendation service that starts timing out. Without a breaker, the whole page loads slowly waiting on those timeouts. With a circuit breaker, once the failure threshold trips, the recommendation panel immediately falls back to "popular items" while the rest of the page renders at normal speed — graceful degradation instead of a slow or broken page.
+An online store's product page calls a recommendation service that starts timing out. Without a breaker, the whole page loads slowly while it waits for those timeouts. With a circuit breaker, once the failure limit is crossed, the recommendation panel switches right away to showing "popular items," while the rest of the page loads at normal speed — a graceful drop in quality instead of a slow or broken page.

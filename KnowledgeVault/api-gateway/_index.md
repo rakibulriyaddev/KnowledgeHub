@@ -2,7 +2,7 @@
 id: api-gateway
 title: "API Gateway"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [microservices, api-management, routing, reverse-proxy]
 parent: architecture-patterns
 children: []
@@ -11,35 +11,35 @@ status: draft
 
 ## Overview
 
-An API Gateway is a reverse proxy placed in front of a microservices backend so clients talk to one endpoint instead of dozens of services directly. It centralizes cross-cutting concerns — authentication, rate limiting, routing, aggregation — that would otherwise be duplicated in every service.
+An API Gateway is a reverse proxy placed in front of a microservices backend, so clients talk to one endpoint instead of dozens of services directly. It gathers cross-cutting jobs — login checks, rate limits, routing, combining results — that would otherwise be repeated in every service.
 
 ## Key Concepts
 
-- Reverse proxy that routes requests to the correct backend service by URL path or header.
-- Centralizes auth, rate limiting, caching, request/response transformation, aggregation, logging, SSL termination, circuit breaking, and versioning.
-- BFF (Backend For Frontend) — a separate tailored gateway per client type.
-- Distinct from a load balancer (traffic distribution only, no API awareness) and a plain reverse proxy (single backend, no API management).
-- Distinct from a service mesh — gateway handles north-south (client-to-service) traffic; mesh handles east-west (service-to-service) traffic.
+- Reverse proxy that sends requests to the right backend service by URL path or header
+- Gathers login checks, rate limiting, caching, request/response changes, combining results, logging, SSL handling, circuit breaking, and versioning in one place
+- BFF (Backend For Frontend) — a separate gateway built for each client type
+- Different from a load balancer (spreads traffic only, doesn't know about the API) and a plain reverse proxy (one backend, no API management)
+- Different from a service mesh — the gateway handles client-to-service traffic; the mesh handles service-to-service traffic
 
 ## Core Knowledge
 
-Without a gateway, a client must know about and connect to every backend service directly — duplicating auth and error handling everywhere and multiplying network calls. An API Gateway becomes the single front door: it routes by path or header (e.g. `/api/users/*` → User Service), terminates SSL so backends can speak plain HTTP, throttles requests per user/IP, caches frequent responses, transforms payloads for older clients, aggregates responses from multiple services into one, and centralizes logging and circuit breaking to stop cascading failures.
+Without a gateway, a client has to know about and connect to every backend service directly — repeating login checks and error handling everywhere, and making far more network calls. An API Gateway becomes the single front door: it sends requests by path or header (like `/api/users/*` → User Service), handles SSL so backends can use plain HTTP, limits requests per user/IP, caches common answers, changes payloads for older clients, combines answers from several services into one, and gathers logging and circuit breaking to stop failures from spreading.
 
-The BFF pattern extends this: instead of one generic gateway, each client type — mobile, web, smart TV — gets its own gateway tailored to the data shape and volume that client needs. Popular products include Kong, AWS API Gateway, Azure API Management, Apigee, and Tyk; Netflix's Zuul was an early pioneer.
+The BFF pattern builds on this: instead of one general gateway, each client type — mobile, web, smart TV — gets its own gateway built for the data shape and amount that client needs. Popular tools include Kong, AWS API Gateway, Azure API Management, Apigee, and Tyk; Netflix's Zuul was an early example.
 
-**Caution:** the biggest risk is letting the gateway become a single point of failure or accumulate business logic that belongs in the services — best practice keeps it lightweight and runs it as an HA cluster.
+**Caution:** the biggest risk is letting the gateway become a single point of failure, or pile up business logic that belongs in the services — best practice keeps it light and runs it as a high-availability cluster.
 
 ## Interview Questions
 
 **Q: How does an API Gateway differ from a load balancer?**
-A: A load balancer distributes traffic with no API awareness; a gateway is API-aware and adds routing, auth, rate limiting, and response aggregation.
+A: A load balancer spreads traffic with no knowledge of the API; a gateway knows the API and adds routing, login checks, rate limiting, and combining of responses.
 
 **Q: What is the BFF pattern?**
-A: Backend For Frontend — a separate gateway per client type, each tailoring the response instead of serving one generic payload to everyone.
+A: Backend For Frontend — a separate gateway for each client type, each one shaping the response instead of giving everyone the same general payload.
 
 **Q: What's the biggest operational risk with an API Gateway?**
-A: Becoming a single point of failure or accumulating business logic that belongs in the services — mitigated with an HA cluster and a lightweight gateway.
+A: Becoming a single point of failure, or piling up business logic that belongs in the services — fixed with a high-availability cluster and a light gateway.
 
 ## Scenario
 
-A company with 50 microservices puts Kong in front of them: a Mobile BFF returns compact JSON, a Web BFF returns fuller payloads, and both share auth, rate limiting, and SSL termination at the gateway layer.
+A company with 50 microservices puts Kong in front of them: a Mobile BFF returns small JSON, a Web BFF returns fuller payloads, and both share login checks, rate limiting, and SSL handling at the gateway layer.

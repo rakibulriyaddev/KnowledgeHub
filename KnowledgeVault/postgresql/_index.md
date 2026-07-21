@@ -2,7 +2,7 @@
 id: postgresql
 title: "PostgreSQL"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [data, storage, sql]
 parent: structured-database
 children: []
@@ -13,42 +13,42 @@ status: draft
 
 ## Overview
 
-PostgreSQL is an open-source, object-relational database known for strict standards compliance, extensibility, and a feature set that blurs the relational/NoSQL line — native JSON, arrays, full-text search, and custom types. It's the common default choice for teams wanting relational correctness without vendor lock-in, and it underpins the MVCC and B-tree indexing concepts already covered generically in this vault.
+PostgreSQL is an open-source, object-relational database known for closely following standards, being easy to extend, and offering features that blur the line between relational and NoSQL — built-in JSON, arrays, full-text search, and custom types. It's the common default pick for teams who want relational correctness with no lock-in to one vendor, and it puts into practice the MVCC and B-tree indexing ideas already covered elsewhere in this vault.
 
 ## Key Concepts
 
-- **MVCC implementation** — Postgres stores old row versions directly in the table (not a separate undo log)
-- **Extensions** — pluggable modules (PostGIS, pg_trgm, TimescaleDB) adding capability without forking the core
-- **JSONB** — binary, indexable JSON type letting Postgres serve semi-structured data relationally
-- **Vacuum / autovacuum** — background process reclaiming dead row versions and updating statistics
-- **Write-ahead log (WAL)** — durability and replication mechanism; basis for streaming/logical replication
-- **Roles and extensible types** — fine-grained permission model and support for user-defined data types
+- **MVCC setup** — Postgres keeps old row versions right in the table (not in a separate undo log)
+- **Extensions** — add-on modules (PostGIS, pg_trgm, TimescaleDB) that add features without changing the core
+- **JSONB** — a binary, indexable JSON type that lets Postgres hold semi-structured data relationally
+- **Vacuum / autovacuum** — a background job that frees dead row versions and updates stats
+- **Write-ahead log (WAL)** — the mechanism behind durability and copying data; the base for streaming/logical replication
+- **Roles and custom types** — a fine-grained permission system and support for user-made data types
 
 ## Core Knowledge
 
-- Postgres's MVCC stores full old tuples in the table itself, so heavy update/delete workloads bloat tables until vacuum reclaims space — this is the most common Postgres-specific operational surprise
-- Autovacuum falling behind (due to long-running transactions, high write volume, or misconfigured thresholds) causes both bloat and, in extreme cases, transaction ID wraparound risk
-- JSONB gives semi-structured flexibility inside a relational engine, and can be indexed (GIN) for containment queries — a genuine middle ground between relational and document models
-- Standards compliance is a selling point but also a friction point — some MySQL-style shortcuts and implicit conversions Postgres deliberately disallows
-- Extensions are why Postgres competes in spaces relational engines traditionally didn't — PostGIS for geospatial, TimescaleDB for time-series, pg_vector for embeddings
-- Replication is WAL-based: physical (byte-level, whole-cluster) or logical (row-level, selective) — the choice affects what kind of topology and filtering is possible
-- Connection handling is process-per-connection by default, making connection pooling (PgBouncer, application-side pools) a near-mandatory addition at scale
-- Default isolation is read committed, same general behavior discussed generically in isolation-levels, but Postgres's MVCC snapshot mechanics are the concrete implementation behind it
+- Postgres's MVCC keeps full old rows right in the table, so heavy update/delete work bloats tables until vacuum frees the space — this is the most common Postgres-specific surprise in running it
+- Autovacuum falling behind (from long-running transactions, high write volume, or bad settings) causes bloat, and in extreme cases the risk of transaction ID wraparound
+- JSONB gives semi-structured flexibility inside a relational engine, and can be indexed (GIN) for lookups — a real middle ground between relational and document models
+- Following standards closely is a selling point but also a source of friction — Postgres won't do some MySQL-style shortcuts and silent conversions on purpose
+- Extensions are why Postgres competes in areas relational engines usually didn't — PostGIS for maps/location, TimescaleDB for time-series, pg_vector for embeddings
+- Copying data uses the WAL: physical (byte-level, whole-cluster) or logical (row-level, selective) — the choice affects what kind of setup and filtering is possible
+- Handling connections is one process per connection by default, which makes connection pooling (PgBouncer, app-side pools) almost required at scale
+- The default isolation level is read committed, matching the general idea covered elsewhere in isolation-levels, but Postgres's MVCC snapshot method is the real machinery behind it
 
 ## Interview Questions
 
-**Q:** Why does Postgres need vacuuming and other databases with MVCC don't (as visibly)?
-**A:** Postgres stores old row versions directly in the table rather than a separate undo/rollback segment, so dead versions physically accumulate there until vacuum reclaims the space.
+**Q:** Why does Postgres need vacuuming when other databases with MVCC don't (as visibly)?
+**A:** Postgres keeps old row versions right in the table instead of a separate undo/rollback area, so dead versions pile up there physically until vacuum frees the space.
 
-**Q:** What's JSONB and when would you use it over a normalized table?
-**A:** A binary, indexable JSON column type — useful for genuinely variable or nested attributes where forcing full normalization adds more schema churn than value, without abandoning the relational core.
+**Q:** What's JSONB and when would you use it instead of a normalized table?
+**A:** A binary, indexable JSON column type — useful for attributes that genuinely vary or nest, where forcing full normalization adds more schema churn than value, without giving up the relational core.
 
-**Q:** Why is connection pooling almost mandatory in production Postgres?
-**A:** Each connection spawns a full OS process with real memory overhead, so a high-connection-count application needs a pooler (PgBouncer) rather than opening one connection per request/thread.
+**Q:** Why is connection pooling almost required in production Postgres?
+**A:** Each connection starts a full OS process with real memory cost, so an app with many connections needs a pooler (PgBouncer) rather than opening one connection per request/thread.
 
-**Q:** Physical vs logical replication — what's the practical difference?
-**A:** Physical replication ships raw WAL bytes for an identical whole-cluster replica; logical replication ships decoded row-level changes, allowing selective table replication and cross-version upgrades.
+**Q:** Physical vs logical replication — what's the real difference?
+**A:** Physical replication sends raw WAL bytes for an identical whole-cluster copy; logical replication sends decoded row-level changes, allowing selective table copying and moving across versions.
 
 ## Scenario
 
-A Postgres-backed service does frequent updates on a hot table, and over weeks query performance degrades even though row count stays flat. Investigation finds autovacuum falling behind due to a long-idle transaction pinning old row versions, letting dead tuples pile up and bloat the table and its indexes. Terminating the stale connection and letting autovacuum catch up restores performance without any schema or query change.
+A Postgres-backed service runs frequent updates on a busy table, and over weeks its query speed drops even though the row count stays the same. Looking into it shows autovacuum falling behind because a long-idle transaction is pinning old row versions, letting dead rows pile up and bloat the table and its indexes. Ending the stale connection and letting autovacuum catch up brings back performance with no change to schema or queries.

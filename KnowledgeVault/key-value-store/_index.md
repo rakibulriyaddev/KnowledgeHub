@@ -2,7 +2,7 @@
 id: key-value-store
 title: "Key-Value Store"
 created: 2026-07-10
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [data, storage, nosql]
 parent: unstructured-database
 children: [redis]
@@ -13,42 +13,42 @@ status: draft
 
 ## Overview
 
-A key-value store maps opaque keys to values with no structure imposed on the value itself — the simplest possible data model, and the fastest. It exists for access patterns that are pure lookups by known key: caching, session storage, feature flags, rate limiting. Redis, Memcached, and DynamoDB (at its core) anchor this space.
+A key-value store maps plain keys to values with no set shape on the value itself — the simplest data model there is, and the fastest. It exists for access patterns that are pure lookups by known key: caching, session storage, feature flags, rate limiting. Redis, Memcached, and DynamoDB (at its core) lead this space.
 
 ## Key Concepts
 
-- **Key** — unique lookup identifier, typically a string
-- **Value** — opaque blob to the store — string, binary, or structured (list, set, hash) in richer engines
-- **TTL (time-to-live)** — automatic expiry of a key after a set duration
-- **Eviction policy** — rule for removing keys under memory pressure (LRU, LFU, random)
-- **In-memory vs persistent** — pure in-memory (fast, volatile) vs disk-backed/replicated (durable, slower)
-- **Data structure server** — engines like Redis extend beyond plain values to lists, sets, hashes, sorted sets
+- **Key** — unique lookup name, usually a string
+- **Value** — a plain blob to the store — string, binary, or a structured item (list, set, hash) in richer engines
+- **TTL (time-to-live)** — a key expires on its own after a set time
+- **Eviction policy** — the rule for removing keys when memory runs low (LRU, LFU, random)
+- **In-memory vs persistent** — pure in-memory (fast, lost on restart) vs disk-backed/replicated (kept safe, slower)
+- **Data structure server** — engines like Redis go beyond plain values to lists, sets, hashes, sorted sets
 
 ## Core Knowledge
 
-- Lookup is O(1) by key — no query language, no joins, no secondary indexing by default, which is both the strength and the ceiling
-- TTL and eviction are first-class because the primary use cases (cache, session, rate limit) are inherently ephemeral data
-- Pure in-memory stores (classic Redis, Memcached) lose data on crash unless persistence (snapshotting, append-only log) is explicitly configured
-- Cache-aside is the dominant pattern: application checks the store first, falls back to the source of truth on miss, then populates the cache
-- Cache stampede (many requests miss simultaneously on expiry, all hit the backing store at once) needs mitigation — jittered TTLs, locks, or request coalescing
-- Richer engines (Redis) offer atomic operations on structured values (list push, set membership, sorted set ranking) that plain key-value can't express
-- Horizontal scaling is straightforward via consistent hashing on the key, but a single hot key can't be split — hot-key problems have no partition-level fix
-- Never treat a cache as the system of record unless the engine explicitly guarantees durability — losing a plain cache should never lose data, only performance
+- Lookup is instant by key — no query language, no joins, no secondary indexing by default, which is both the strength and the limit
+- TTL and eviction are core features because the main uses (cache, session, rate limit) are naturally short-lived data
+- Pure in-memory stores (classic Redis, Memcached) lose data on a crash unless saving to disk (snapshots, an append-only log) is turned on
+- Cache-aside is the main pattern: the app checks the store first, falls back to the real source on a miss, then fills the cache
+- Cache stampede (many requests miss at once when something expires, all hit the real store at once) needs a fix — jittered TTLs, locks, or merging requests
+- Richer engines (Redis) offer safe, all-or-nothing actions on structured values (list push, set membership, sorted set ranking) that plain key-value can't do
+- Scaling out across machines is easy using consistent hashing on the key, but one very busy key can't be split — busy-key problems have no fix at the split level
+- Never treat a cache as the main copy of data unless the engine clearly promises to keep it safe — losing a plain cache should only cost speed, never data
 
 ## Interview Questions
 
 **Q:** What is the cache-aside pattern and why is it common?
-**A:** The app reads from the cache first, and on a miss reads from the source of truth then writes the result back to the cache — simple, and it degrades gracefully if the cache is empty or down.
+**A:** The app reads from the cache first, and on a miss reads from the real source then writes the result back to the cache — simple, and it still works fine if the cache is empty or down.
 
-**Q:** What causes a cache stampede and how do you prevent it?
-**A:** Many keys expiring at once (or one hot key expiring under high load) send a burst of requests to the backing store simultaneously; jittering TTLs or coalescing concurrent requests for the same key prevents it.
+**Q:** What causes a cache stampede and how do you stop it?
+**A:** Many keys expiring at once (or one busy key expiring under high load) send a burst of requests to the real store at the same time; jittering TTLs or merging requests for the same key stops it.
 
-**Q:** Why can't sharding fix a hot-key problem?
-**A:** Sharding distributes different keys across nodes, but all traffic for one specific key still lands on a single node regardless of cluster size.
+**Q:** Why can't splitting across machines fix a busy-key problem?
+**A:** Splitting spreads different keys across machines, but all traffic for one specific key still lands on a single machine no matter how big the cluster is.
 
-**Q:** When should you not use a key-value store as your primary database?
-**A:** When you need querying by non-key attributes, relationships, or transactions spanning multiple keys — the model has no native support for any of that.
+**Q:** When should you not use a key-value store as your main database?
+**A:** When you need to search by fields other than the key, need relationships, or need actions spanning multiple keys — the model has no built-in support for any of that.
 
 ## Scenario
 
-A product page loads slower during traffic spikes because every request re-runs the same expensive aggregation query against the primary database. Adding a key-value cache in front, keyed by product id with a short TTL and cache-aside logic, absorbs the vast majority of reads from memory, and jittering the TTL avoids every cached entry expiring in the same instant and re-flooding the database.
+A product page loads slower during traffic spikes because every request re-runs the same costly total-calculating query against the main database. Adding a key-value cache in front, keyed by product id with a short TTL and cache-aside logic, absorbs most reads from memory, and jittering the TTL stops every cached entry from expiring at the same moment and flooding the database again.

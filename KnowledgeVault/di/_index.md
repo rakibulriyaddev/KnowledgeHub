@@ -2,7 +2,7 @@
 id: di
 title: "Dependency Injection"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [programming, design-pattern, oop]
 parent: solid-principles
 children: []
@@ -10,37 +10,37 @@ status: draft
 ---
 
 ## Overview
-Dependency Injection (DI) is a design pattern where an object's dependencies are provided from the outside rather than constructed internally. It's the most common implementation of the Inversion of Control principle, decoupling *what* a class needs from *how* those needs are satisfied.
+Dependency Injection (DI) is a design pattern where an object's dependencies are given to it from outside, instead of the object building them itself. It is the most common way to apply the Inversion of Control principle. It separates *what* a class needs from *how* those needs get met.
 
 ## Key Concepts
 - Constructor, property, and method injection — the three injection styles
-- IoC container / DI container — resolves and wires dependency graphs automatically
+- IoC container / DI container — finds and connects dependency graphs automatically
 - Service lifetimes — transient, scoped, singleton
-- Interface-based programming — depend on abstractions, not concrete types
-- Composition root — the single place where the object graph is wired up
+- Interface-based programming — depend on interfaces, not concrete types
+- Composition root — the one place where the whole object graph gets connected
 
 ## Core Knowledge
-- DI enables unit testing via mocking/stubbing without touching production wiring code
-- Constructor injection is preferred — makes required dependencies explicit and immutable
-- Overusing DI containers as a service locator (pulling dependencies at runtime) defeats the purpose and hides coupling
-- Wrong lifetime scoping is a common bug source — e.g. injecting a scoped service into a singleton causes captive dependency issues
-- DI is a runtime pattern; distinct from compile-time approaches like generics-based composition
-- Circular dependencies between injected services indicate a design smell, not something to work around mechanically
+- DI makes unit testing easier, since tests can use mocks or stubs without touching production wiring code
+- Constructor injection is the preferred style — it makes required dependencies clear and fixed once set
+- Using a DI container as a service locator (pulling dependencies at runtime instead of receiving them) defeats the point and hides coupling
+- Picking the wrong lifetime is a common source of bugs — for example, putting a scoped service inside a singleton causes a captive dependency problem
+- DI works at runtime; it is different from compile-time approaches such as composing things through generics
+- Circular dependencies between injected services are a sign of a design problem, not something to just patch around
 - Most modern frameworks (ASP.NET Core, Spring, Angular) ship a built-in DI container
-- Too many constructor parameters signals a class doing too much — a cue to split responsibilities
+- Too many constructor parameters is a sign a class is doing too much — a hint to split it into smaller pieces
 
 ## Interview Questions
 **Q:** What's the difference between Dependency Injection and the Service Locator pattern?
-**A:** DI pushes dependencies in explicitly (usually via constructor); Service Locator has code pull dependencies from a central registry at runtime, hiding what a class actually needs.
+**A:** DI pushes dependencies in directly, usually through the constructor. Service Locator instead has code pull dependencies from a central registry at runtime, which hides what a class really needs.
 
 **Q:** Why prefer constructor injection over property injection?
-**A:** Constructor injection makes dependencies required and immutable, failing fast at object creation instead of allowing a partially-configured object to exist.
+**A:** Constructor injection makes dependencies required and fixed. It fails right away when the object is created, instead of letting a half-set-up object exist.
 
 **Q:** What's a captive dependency?
-**A:** A longer-lived service (e.g. singleton) holding a reference to a shorter-lived one (e.g. scoped), causing the shorter-lived dependency to outlive its intended scope.
+**A:** When a longer-lived service (like a singleton) holds a reference to a shorter-lived one (like a scoped service), making the shorter-lived one live longer than it should.
 
 **Q:** Does using DI require an IoC container?
-**A:** No — "poor man's DI" (manual constructor wiring) is valid DI; a container just automates graph resolution for larger apps.
+**A:** No — wiring constructors by hand ("poor man's DI") still counts as DI. A container just automates this connecting for bigger apps.
 
 ## Scenario
-A payment service class directly instantiates a concrete `SqlPaymentRepository`, making it impossible to unit test without a real database. Refactoring to accept an `IPaymentRepository` via constructor injection lets tests supply an in-memory fake, and lets production wire the SQL implementation — the class code never changes.
+A payment service class directly creates a concrete `SqlPaymentRepository`, which makes it impossible to unit test without a real database. Changing it to accept an `IPaymentRepository` through constructor injection lets tests use an in-memory fake, while production still wires up the real SQL version — the class code itself never changes.

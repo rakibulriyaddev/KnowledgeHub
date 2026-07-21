@@ -2,7 +2,7 @@
 id: query-execution-plan
 title: "Query Execution Plan"
 created: 2026-07-10
-modified: 2026-07-10
+modified: 2026-07-22
 tags: [database, performance, query]
 parent: database-indexing
 children: [join-strategies, query-statistics]
@@ -13,42 +13,42 @@ status: draft
 
 ## Overview
 
-A query execution plan is the step-by-step strategy the database engine picks to run a query — which scans, joins, and sorts it uses and in what order. It exists because SQL is declarative: you state what you want, and the planner decides how, based on statistics, indexes, and cost estimates. Reading plans is how performance claims get verified instead of guessed.
+A query execution plan is the step-by-step plan the database engine picks to run a query — which scans, joins, and sorts it uses, and in what order. It exists because SQL just says what you want, not how to get it. The database decides how, based on stats, indexes, and cost guesses. Reading plans is how you check performance claims instead of just guessing.
 
 ## Key Concepts
 
-- **Planner/optimizer** — component that generates and costs candidate plans, picks the cheapest
-- **Seq scan vs index scan** — full-table read vs indexed lookup
-- **Join strategies** — nested loop, hash join, merge join — each fits different data shapes
-- **Cost estimate vs actual** — planner's prediction vs real rows/time when actually executed
-- **Statistics** — row counts, value distributions the planner uses to estimate costs
-- **EXPLAIN / EXPLAIN ANALYZE** — commands to view estimated vs actual plans
+- **Planner/optimizer** — the part that builds and prices many possible plans, and picks the cheapest
+- **Seq scan vs index scan** — reading the whole table vs using an index to jump straight to rows
+- **Join strategies** — nested loop, hash join, merge join — each works best for different data shapes
+- **Cost guess vs actual** — the planner's guess vs the real rows/time when the query actually runs
+- **Statistics** — row counts and value spreads the planner uses to guess costs
+- **EXPLAIN / EXPLAIN ANALYZE** — commands to see the guessed plan vs the real one
 
 ## Core Knowledge
 
-- EXPLAIN shows the estimated plan without running the query; EXPLAIN ANALYZE actually runs it and shows real rows/time — use the latter to catch bad estimates
-- A big gap between estimated and actual row counts signals stale or missing statistics — the usual root cause of a bad plan
-- Seq scan isn't inherently bad: for small tables or queries returning most rows, it's cheaper than an index scan
-- Nested loop joins suit small outer sets; hash/merge joins suit large sets — the planner switches based on estimated sizes, and a bad estimate picks the wrong one
-- Plans are read bottom-up and inside-out: innermost/deepest operations execute first, feeding outward
-- The same query can get a different plan after data grows, an index is added/dropped, or statistics go stale — plans aren't fixed forever
-- Parameter sniffing: a plan cached for one parameter value can be terrible for another with a very different value distribution
-- Cost units are relative, engine-specific numbers — not milliseconds — don't compare costs across different databases
+- EXPLAIN shows the guessed plan without running the query; EXPLAIN ANALYZE actually runs it and shows the real rows/time — use this one to catch bad guesses
+- A big gap between guessed and actual row counts is a sign of old or missing statistics — the usual cause of a bad plan
+- A seq scan isn't always bad: for small tables, or queries that return most rows, it can be cheaper than an index scan
+- Nested loop joins fit small outer sets; hash/merge joins fit large sets — the planner switches based on guessed sizes, and a bad guess picks the wrong one
+- Plans are read bottom-up and inside-out: the deepest steps run first and feed the steps above them
+- The same query can get a different plan after data grows, an index is added or removed, or statistics go stale — plans are not fixed forever
+- Parameter sniffing: a plan saved for one input value can be very bad for another input with a very different value spread
+- Cost numbers are relative and specific to each engine — not milliseconds — don't compare costs across different databases
 
 ## Interview Questions
 
-**Q:** Difference between EXPLAIN and EXPLAIN ANALYZE?
-**A:** EXPLAIN estimates the plan without executing; EXPLAIN ANALYZE runs the query and reports actual rows and timing alongside the estimates.
+**Q:** What is the difference between EXPLAIN and EXPLAIN ANALYZE?
+**A:** EXPLAIN guesses the plan without running the query; EXPLAIN ANALYZE runs the query and shows real rows and timing next to the guesses.
 
 **Q:** How do you spot a bad plan from its output?
-**A:** Large divergence between estimated and actual row counts, or a seq scan where an index scan was expected on a selective filter.
+**A:** A big gap between guessed and actual row counts, or a full table scan where an index scan was expected on a selective filter.
 
 **Q:** Why would adding an index not change the plan?
-**A:** The planner estimated the scan is still cheaper — often due to low selectivity, small table size, or stale statistics undervaluing the index.
+**A:** The planner guessed the scan is still cheaper — often because of low selectivity, a small table, or old statistics that undervalue the index.
 
 **Q:** What causes a query to suddenly get slow with no code change?
-**A:** Data growth, statistics going stale, or a cached plan built for atypical parameter values (parameter sniffing) shifting the optimizer's choice.
+**A:** Data growth, statistics going stale, or a saved plan built for unusual input values (parameter sniffing) changing the planner's choice.
 
 ## Scenario
 
-A query that joined orders and customers ran fast in testing but crawled in production. EXPLAIN ANALYZE showed the planner estimated 100 matching rows but actually processed 2 million, having picked a nested loop join sized for the wrong estimate. Refreshing table statistics let the planner see the real distribution and switch to a hash join, cutting runtime from minutes to seconds.
+A query that joined orders and customers ran fast in testing but crawled in production. EXPLAIN ANALYZE showed the planner guessed 100 matching rows but actually processed 2 million, and had picked a nested loop join sized for the wrong guess. Refreshing table statistics let the planner see the real numbers and switch to a hash join, cutting the run time from minutes to seconds.

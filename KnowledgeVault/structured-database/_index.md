@@ -2,7 +2,7 @@
 id: structured-database
 title: "Structured Database"
 created: 2026-07-10
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [data, storage, sql]
 parent: database
 children: [normalization, postgresql, mysql]
@@ -13,42 +13,42 @@ status: draft
 
 ## Overview
 
-A structured (relational) database stores data in tables of rows and columns under a fixed schema, queried with SQL. It is the default choice when the data shape is known upfront and relationships between entities matter. Systems like PostgreSQL, MySQL, SQL Server, and Oracle dominate this space.
+A structured (relational) database stores data in tables of rows and columns, under a fixed schema, and is read and changed using SQL. It's the default choice when you know the shape of your data ahead of time, and the relationships between entities matter. Systems like PostgreSQL, MySQL, SQL Server, and Oracle lead this space.
 
 ## Key Concepts
 
-- **Table** — grid of rows (records) and columns (typed fields)
-- **Schema** — structure declared before data is inserted; enforced by the engine
-- **Primary key** — unique identifier per row
-- **Foreign key** — link from a row to another table's primary key
-- **SQL** — declarative language for creating, reading, updating, deleting data
-- **ACID** — Atomicity, Consistency, Isolation, Durability — transaction guarantees
+- **Table** — a grid of rows (records) and columns (typed fields)
+- **Schema** — the structure set before any data is added; the engine enforces it
+- **Primary key** — a unique ID for each row
+- **Foreign key** — a link from a row to another table's primary key
+- **SQL** — a language for creating, reading, updating, and deleting data by describing what you want, not how
+- **ACID** — Atomicity, Consistency, Isolation, Durability — the guarantees a transaction makes
 
 ## Core Knowledge
 
-- The schema is enforced by the engine: wrong types, missing columns, and broken references are rejected at write time
-- Relationships are first-class — one-to-one, one-to-many, many-to-many (via junction table) — and joins recombine them at query time
-- Normalization reduces duplication but multiplies joins; denormalize deliberately for read-heavy paths
-- Constraints (primary key, foreign key, unique, not-null, check) push integrity into the engine — cheaper and safer than enforcing it in application code
-- Isolation levels trade correctness for concurrency; the default is rarely serializable
-- Schema migrations on large live tables are an operational risk — plan for locking and rollback
-- The query planner, not the query text, decides performance — read execution plans
-- Scaling is vertical-first; horizontal scaling (read replicas, sharding) costs complexity and weakens some guarantees
+- The engine enforces the schema: wrong types, missing columns, and broken links are rejected the moment you try to write them
+- Relationships are a core part of the model — one-to-one, one-to-many, many-to-many (through a junction table) — and joins put them back together at query time
+- Normalizing data cuts down on duplication but adds more joins; denormalize on purpose only for paths that are read a lot
+- Rules (primary key, foreign key, unique, not-null, check) push correctness into the engine — cheaper and safer than checking it yourself in app code
+- Isolation levels trade off correctness for how many things can run at once; the default setting is rarely the strictest one (serializable)
+- Changing the schema on large, live tables is risky while the app is running — plan for locking and for rolling back if it goes wrong
+- The query planner, not the words in your query, decides how fast it runs — read the execution plan to know why
+- Scaling starts with a bigger machine; scaling across many machines (read replicas, sharding) adds complexity and weakens some guarantees
 
 ## Interview Questions
 
 **Q:** What makes a database "structured"?
-**A:** A fixed, engine-enforced schema — tables with typed columns declared before data is written.
+**A:** A fixed schema, enforced by the engine — tables with typed columns set up before any data is written.
 
 **Q:** Primary key vs foreign key?
-**A:** Primary key uniquely identifies a row in its own table; foreign key references a primary key in another table to form a relationship.
+**A:** A primary key uniquely identifies a row in its own table; a foreign key points to a primary key in another table, forming a relationship.
 
 **Q:** How do you decide between normalizing and denormalizing?
-**A:** Normalize by default for integrity; denormalize selectively when join cost hurts a proven read-heavy path.
+**A:** Normalize by default, for correctness; denormalize only in specific cases, when join cost is hurting a read-heavy path that's proven to need it.
 
 **Q:** Why can two logically identical queries perform completely differently?
-**A:** The query planner picks execution strategies based on indexes and statistics — different plans, different costs.
+**A:** The query planner picks how to run the query based on indexes and stored statistics — different plans lead to different costs, even for queries that look the same.
 
 ## Scenario
 
-A banking app must transfer money between two accounts: debit one, credit the other. If the process crashes midway, money vanishes. A structured database wraps both updates in a single ACID transaction — either both apply or neither does — and foreign keys guarantee every transfer references real accounts.
+A banking app must move money between two accounts: take money from one, add it to the other. If the process crashes halfway through, money could disappear. A structured database wraps both updates in a single ACID transaction — either both happen or neither does — and foreign keys make sure every transfer points to real accounts.
