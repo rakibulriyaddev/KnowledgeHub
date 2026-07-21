@@ -2,7 +2,7 @@
 id: abstraction
 title: "Abstraction"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [programming, oop, interface-design]
 parent: oop
 children: []
@@ -10,37 +10,37 @@ status: draft
 ---
 
 ## Overview
-Abstraction means modeling only the properties of a concept that matter for the problem at hand, and hiding everything else behind a simpler interface. It's the design goal that encapsulation implements — deciding *what* to expose, while encapsulation enforces *how* it stays hidden.
+Abstraction means modeling only the parts of a concept that matter for the problem, and hiding everything else behind a simpler interface. It is the design goal that encapsulation carries out — abstraction decides *what* to show, encapsulation makes sure it stays hidden.
 
 ## Key Concepts
-- Essential vs incidental complexity — abstraction strips away detail irrelevant to the caller's purpose
-- Interfaces and abstract classes — the primary language tools for expressing an abstraction
-- Levels of abstraction — a system is a stack of them, each hiding the layer below
-- Abstraction vs encapsulation — a design decision vs the mechanism that enforces it
-- Leaky abstractions — when hidden details surface anyway and break the simplification
+- Essential vs incidental complexity — abstraction removes detail that doesn't matter to the caller
+- Interfaces and abstract classes — the main language tools for building an abstraction
+- Levels of abstraction — a system is a stack of these, each one hiding the layer below
+- Abstraction vs encapsulation — a design choice vs the method that enforces it
+- Leaky abstractions — when hidden details show up anyway and break the simple picture
 
 ## Core Knowledge
-- Abstraction is a modeling decision made before any code — encapsulation is the implementation technique that protects it
-- A good abstraction picks the smallest interface that fully captures the caller's needs — over-abstracting adds indirection with no payoff
-- "All non-trivial abstractions are leaky to some degree" — e.g. network calls behind a method signature can still time out
-- Abstraction layers let large systems be reasoned about locally — a caller trusts the interface without knowing the implementation
-- Premature abstraction (guessing at future variation) is as costly as no abstraction — YAGNI applies here directly
-- Abstract classes bundle partial implementation with a contract; interfaces are pure contracts — the choice shapes how much is hidden vs shared
-- Too many abstraction layers slow debugging — each layer must be mentally unwound to find where a bug actually lives
-- Good abstractions are discovered from real duplicate concrete cases, not designed speculatively upfront
+- Abstraction is a modeling choice made before any code is written — encapsulation is the method used to protect it
+- A good abstraction picks the smallest interface that fully covers what the caller needs — too much abstraction just adds extra steps with no gain
+- "Almost every abstraction leaks a little" — for example, a network call hidden behind a method can still time out
+- Abstraction layers let big systems be understood one part at a time — a caller trusts the interface without needing to know how it works inside
+- Building an abstraction too early (guessing at future change) can cost as much as having none — the YAGNI rule applies here directly
+- Abstract classes bundle some working code with a contract; interfaces are pure contracts — the choice shapes how much is hidden vs shared
+- Too many abstraction layers slow down debugging — each layer must be worked through by hand to find where a bug really is
+- Good abstractions come from real, repeated cases already seen in code, not from guessing ahead of time
 
 ## Interview Questions
 **Q:** What's the difference between abstraction and encapsulation?
-**A:** Abstraction is the design decision of what to expose and what to hide; encapsulation is the mechanism (access modifiers, bundling) that enforces it.
+**A:** Abstraction is the design choice of what to show and what to hide; encapsulation is the method (access modifiers, bundling) that makes sure it stays hidden.
 
 **Q:** What is a "leaky abstraction"?
-**A:** An abstraction that hides implementation details in the common case, but lets those details surface under certain conditions — e.g. an ORM hiding SQL until a slow query forces you to reason about it anyway.
+**A:** An abstraction that hides its inner details in normal cases, but lets them show under some conditions — for example, an ORM hiding SQL until a slow query forces you to think about it anyway.
 
 **Q:** Why can too much abstraction hurt a codebase?
-**A:** Extra indirection layers make code harder to trace and debug, and often exist to support flexibility that's never actually used.
+**A:** Extra layers make code harder to follow and debug, and they often exist to support flexibility that never actually gets used.
 
 **Q:** How do you decide the right level of abstraction for an interface?
-**A:** Base it on actual, observed variation in concrete implementations rather than speculation — abstract only what genuinely differs.
+**A:** Base it on real, seen differences between working versions, not guesses — only make abstract what truly differs.
 
 ## Scenario
-A reporting module needs to fetch data from either a SQL database or a REST API depending on deployment. Defining a `DataSource` abstraction with a single `fetch()` method lets the reporting logic stay unaware of which concrete source is behind it, so a new source type can be added without touching any report code.
+A reporting module needs to get data from either a SQL database or a REST API, depending on where it's set up. Making a `DataSource` abstraction with one `fetch()` method lets the reporting logic stay unaware of which one is behind it, so a new source type can be added without changing any report code.

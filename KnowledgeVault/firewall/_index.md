@@ -2,7 +2,7 @@
 id: firewall
 title: "Firewall"
 created: 2026-07-15
-modified: 2026-07-15
+modified: 2026-07-22
 tags: [infrastructure, security, networking]
 parent: networking
 children: []
@@ -11,40 +11,40 @@ status: draft
 
 ## Overview
 
-A firewall inspects and filters traffic crossing a network boundary, allowing or blocking packets/connections based on a rule set. It's the baseline perimeter control every networked system sits behind, deciding what's even allowed to reach a server before any application logic runs.
+A firewall checks and filters traffic that crosses a network boundary, allowing or blocking packets and connections based on a set of rules. It is the basic perimeter control every networked system sits behind, deciding what is even allowed to reach a server before any application code runs.
 
 ## Key Concepts
 
 - Packet-filtering (L3/L4) — allow/deny by IP, port, protocol; stateless or stateful
-- Application-layer (L7) / WAF — inspects HTTP payloads for attack patterns (SQLi, XSS)
+- Application-layer (L7) / WAF — checks HTTP content for attack patterns (SQLi, XSS)
 - Network firewall (perimeter/VPC-level) vs host-based firewall (per-machine, e.g. iptables, `ufw`)
 - Security groups / NACLs — cloud-native firewall constructs (AWS, Azure, GCP)
 - Default-deny posture — block everything, explicitly allow only what's needed
 
 ## Core Knowledge
 
-Stateful firewalls track connection state (established, related) so return traffic for an allowed outbound request is auto-permitted — stateless ones must explicitly allow both directions, which is more error-prone.
-A firewall rule set should default-deny inbound and only open the specific ports/sources actually required — the most common real-world misconfiguration is an overly broad allow rule (e.g. `0.0.0.0/0` on a database port).
-Network-layer firewalls (L3/L4) filter by IP/port/protocol and can't see payload content; a Web Application Firewall (WAF) operates at L7 and inspects HTTP requests for known attack signatures, often deployed at the reverse proxy/CDN layer.
-Cloud environments split this into security groups (stateful, attached to instances) and NACLs (stateless, attached to subnets) — security groups are the day-to-day tool, NACLs are a coarser backstop.
-A firewall protects against unauthorized access and network-layer attacks but does nothing against application-layer bugs (e.g. SQL injection in a query it's never inspected) unless paired with a WAF.
-**Caution:** firewalls are a perimeter control, not a substitute for defense in depth — internal services should still authenticate/authorize each other (zero-trust) rather than trusting anything "inside" the firewall.
-Host-based firewalls (iptables, `ufw`, Windows Firewall) add a second layer per machine, useful even inside an already-firewalled network segment.
+Stateful firewalls track the state of a connection (established, related), so return traffic for an allowed outbound request is let through automatically. Stateless firewalls must explicitly allow both directions, which is easier to get wrong.
+A firewall rule set should default-deny inbound traffic, and only open the exact ports and sources that are really needed. The most common real-world mistake is an allow rule that is too broad (for example, `0.0.0.0/0` on a database port).
+Network-layer firewalls (L3/L4) filter by IP, port, and protocol, and cannot see the payload content. A Web Application Firewall (WAF) works at L7 and checks HTTP requests for known attack patterns, often placed at the reverse proxy or CDN layer.
+Cloud environments split this into security groups (stateful, attached to instances) and NACLs (stateless, attached to subnets) — security groups are the everyday tool, and NACLs act as a rougher backup layer.
+A firewall protects against unwanted access and network-layer attacks, but does nothing against bugs at the application layer (like SQL injection in a query it never looks at), unless it is paired with a WAF.
+**Caution:** a firewall is a perimeter control, not a replacement for defense in depth — internal services should still check each other's identity and permissions (zero-trust), instead of trusting anything just because it is "inside" the firewall.
+Host-based firewalls (iptables, `ufw`, Windows Firewall) add a second layer on each machine, useful even inside a network segment that is already firewalled.
 
 ## Interview Questions
 
 **Q: What's the difference between a stateful and stateless firewall?**
-A: A stateful firewall tracks connection state and auto-allows return traffic for permitted outbound requests; a stateless firewall evaluates every packet independently and needs explicit rules for both directions.
+A: A stateful firewall tracks connection state and automatically allows return traffic for outbound requests it permitted. A stateless firewall checks every packet on its own and needs explicit rules for both directions.
 
 **Q: How does a WAF differ from a traditional network firewall?**
-A: A network firewall filters by IP/port/protocol at L3/L4 without seeing payload; a WAF operates at L7, inspecting HTTP request content for attack patterns like SQL injection or XSS.
+A: A network firewall filters by IP, port, and protocol at L3/L4, without seeing the payload. A WAF works at L7, checking HTTP request content for attack patterns like SQL injection or XSS.
 
 **Q: What's the difference between AWS security groups and NACLs?**
-A: Security groups are stateful and attached to instances (the primary access-control tool); NACLs are stateless, attached to subnets, and act as a coarser secondary layer.
+A: Security groups are stateful and attached to instances — the main access-control tool. NACLs are stateless, attached to subnets, and act as a rougher, secondary layer.
 
 **Q: Why is "default-deny" the recommended firewall posture?**
-A: It minimizes attack surface by only exposing what's explicitly needed, rather than relying on remembering to block everything dangerous — a single missed deny rule in a default-allow setup can expose a service.
+A: It keeps the attack surface small by only exposing what is explicitly needed, instead of relying on remembering to block everything dangerous. In a default-allow setup, a single missed deny rule can expose a service.
 
 ## Scenario
 
-A team spins up a new database instance and, for convenience, opens its port to all inbound traffic while debugging. Within hours it's found by automated scanners and compromised — a firewall rule scoped to only the application servers' IPs (default-deny elsewhere) would have prevented the exposure entirely.
+A team spins up a new database instance and, for convenience, opens its port to all inbound traffic while debugging. Within hours, automated scanners find it and break in. A firewall rule limited to just the application servers' IPs (default-deny for everything else) would have stopped this exposure completely.

@@ -2,7 +2,7 @@
 id: consistent-hashing
 title: "Consistent Hashing"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [data, distributed-systems, scalability]
 parent: database
 children: []
@@ -13,7 +13,7 @@ status: draft
 
 ## Overview
 
-Consistent hashing is a hashing scheme, introduced by Karger et al. at MIT in 1997, that maps keys to nodes on a ring such that adding or removing a node only remaps a small, bounded fraction of keys, instead of nearly all of them as with plain modulo hashing. It exists because naive `hash(key) % N` remaps almost every key when N changes, making cluster resizing prohibitively disruptive. It underpins sharding and clustering in Redis, Cassandra, DynamoDB, Memcached (client-side), Akamai's CDN, and Discord's message store.
+Consistent hashing is a hashing method, first shown by Karger and others at MIT in 1997, that maps keys to nodes on a ring so that adding or removing a node only moves a small, limited share of keys, instead of nearly all of them like plain modulo hashing does. It exists because the simple `hash(key) % N` moves almost every key whenever N changes, making it very costly to resize a cluster. It is the base of sharding and clustering in Redis, Cassandra, DynamoDB, Memcached (on the client side), Akamai's CDN, and Discord's message store.
 
 ## Key Concepts
 
@@ -25,30 +25,30 @@ Consistent hashing is a hashing scheme, introduced by Karger et al. at MIT in 19
 
 ## Core Knowledge
 
-- With plain modulo hashing, changing node count N remaps roughly (N-1)/N of all keys; consistent hashing bounds remapping to about 1/N of keys per node change
-- Virtual nodes solve the problem of a single physical node getting an unlucky (too large or too small) arc of the ring — more vnodes per node smooths the distribution
-- Rebalancing cost is localized: only keys between the changed node and its neighbors move, which is why consistent hashing makes elastic scaling practical
-- Skewed key popularity (a hot key) is not solved by consistent hashing — it solves distribution of key *space*, not distribution of *traffic* to individual keys
-- Replication is naturally layered on top: a key's data is stored not just at its ring owner but also at the next N-1 nodes clockwise, giving redundancy without a separate scheme
-- Choosing too few virtual nodes per physical node causes visible load imbalance; too many increases metadata/lookup overhead — real systems tune this
-- This is the mechanism, not the policy — the actual sharding/routing decision (which key maps to which shard) still needs a real shard key design, same as in generic database-sharding
-- Client-side vs server-side ring awareness matters: some systems (Cassandra) have clients aware of ring topology directly, others hide it behind a coordinator/proxy
-- Alternatives exist: rendezvous (highest-random-weight) hashing is simpler but O(N) per lookup, and Google's Jump Hash / Maglev hashing trade flexibility for speed; a fast non-cryptographic hash (MurmurHash, xxHash) is preferred over MD5/SHA since collision resistance isn't the goal
+- With plain modulo hashing, changing the node count N remaps roughly (N-1)/N of all keys; consistent hashing limits this to about 1/N of keys per node change
+- Virtual nodes fix the problem of one physical node getting an unlucky (too big or too small) piece of the ring — more vnodes per node smooths out the load
+- The cost of rebalancing stays local: only keys between the changed node and its neighbors move, which is why consistent hashing makes elastic scaling practical
+- Consistent hashing does not fix an uneven popular key (a "hot key") — it spreads out the key *space*, not the *traffic* going to individual keys
+- Replication is added naturally on top: a key's data is stored not just at its owner node but also at the next N-1 nodes going clockwise, giving redundancy without needing a separate scheme
+- Choosing too few virtual nodes per physical node causes an obvious load imbalance; too many raises the cost of metadata and lookups — real systems adjust this balance
+- This is the mechanism, not the rule for deciding — the actual choice of which key goes to which shard still needs a real shard key design, just like in general database sharding
+- Whether the client or the server knows about the ring matters: some systems (Cassandra) let clients know the ring layout directly, others hide it behind a coordinator or proxy
+- Other options exist: rendezvous (highest-random-weight) hashing is simpler but costs O(N) per lookup, and Google's Jump Hash / Maglev hashing trade some flexibility for speed. A fast, non-cryptographic hash (MurmurHash, xxHash) is chosen over MD5/SHA, since avoiding collisions is not the goal here
 
 ## Interview Questions
 
 **Q:** Why is plain `hash(key) % N` a bad fit for a growing/shrinking cluster?
-**A:** Changing N remaps almost every key to a different node, forcing a near-total data shuffle on every resize — consistent hashing bounds that to a small fraction.
+**A:** Changing N remaps almost every key to a different node, forcing a near-total shuffle of data on every resize — consistent hashing limits that to a small share.
 
 **Q:** What problem do virtual nodes solve?
-**A:** Without them, each physical node owns one arbitrary ring arc that may be much larger or smaller than others; multiple vnodes per node average out the imbalance.
+**A:** Without them, each physical node owns one random piece of the ring that may be much bigger or smaller than others; several vnodes per node average out the imbalance.
 
 **Q:** Does consistent hashing prevent hot-key problems?
-**A:** No — it distributes key space evenly across nodes, but if one specific key gets disproportionate traffic, that traffic still concentrates on whichever single node owns it.
+**A:** No — it spreads out key space evenly across nodes, but if one specific key gets much more traffic than others, that traffic still lands on whichever single node owns it.
 
 **Q:** How does consistent hashing relate to replication in systems like Cassandra?
-**A:** A key's replicas are simply the next N-1 nodes walking clockwise from its ring position, layering redundancy on top of the same ring structure used for placement.
+**A:** A key's copies are simply the next N-1 nodes walking clockwise from its ring position, adding redundancy on top of the same ring used for placement.
 
 ## Scenario
 
-A caching cluster resizes from 4 to 5 nodes during a traffic ramp-up, and with naive modulo hashing this would invalidate ~80% of cached keys at once, causing a stampede to the backing store. Using consistent hashing instead, only the keys between the new node and its neighbors move, keeping the vast majority of the cache warm through the resize.
+A caching cluster grows from 4 to 5 nodes during a traffic ramp-up. With plain modulo hashing, this would throw away about 80% of cached keys at once, causing a rush of requests to the backing store. Using consistent hashing instead, only the keys between the new node and its neighbors move, so most of the cache stays warm through the resize.

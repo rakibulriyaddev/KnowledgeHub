@@ -116,6 +116,7 @@ The `_index.md` body (below the frontmatter) is section-wise — see `.claude/co
 - **One line per bullet** — depth belongs in child topics
 - **No code by default** — add an `## Example` section only when explicitly requested
 - No "learn more at X" filler, no repetition of the title
+- **Simple vocabulary** — reader has basic English (~20/100 vocabulary level). Use short, common, everyday words and short sentences. Never use a rare/fancy word where a plain one works (e.g. "use" not "utilize", "show" not "demonstrate", "get" not "obtain", "help" not "facilitate", "hard" not "arduous"). Technical terms (database, API, cache, thread, etc.) stay exact — never dumb those down, only keep the sentences around them plain.
 
 **Good examples in the vault:** `javascript/_index.md`, `javascript-async/_index.md`
 

@@ -2,7 +2,7 @@
 id: redis
 title: "Redis"
 created: 2026-07-11
-modified: 2026-07-11
+modified: 2026-07-22
 tags: [data, storage, nosql]
 parent: key-value-store
 children: []
@@ -13,42 +13,42 @@ status: draft
 
 ## Overview
 
-Redis is the dominant in-memory data structure server, extending the plain key-value model with rich types (lists, sets, hashes, sorted sets, streams) and single-threaded atomic execution. It's the concrete engine behind most of the caching, session, and rate-limiting patterns described generically for key-value stores, and increasingly used as a lightweight message broker and primary store for specific workloads.
+Redis is the top in-memory data structure server. It extends the plain key-value model with rich types (lists, sets, hashes, sorted sets, streams) and runs commands one at a time so each one is atomic. It's the real engine behind most of the caching, session, and rate-limiting patterns described in general terms for key-value stores, and it's more and more used as a light message broker and as the main store for some workloads.
 
 ## Key Concepts
 
-- **Single-threaded execution** — commands run one at a time, making individual operations atomic without explicit locking
+- **Single-threaded execution** — commands run one at a time, so each one is atomic with no locking needed
 - **Data structures** — lists, sets, hashes, sorted sets, bitmaps, streams — beyond plain string values
-- **Persistence** — RDB (point-in-time snapshot) and AOF (append-only log), optional and configurable
-- **Pub/Sub and Streams** — messaging primitives layered on top of the key-value core
-- **Redis Cluster** — native sharding across nodes via hash slots
-- **Pipelining** — batching multiple commands in one round trip to cut network overhead
+- **Persistence** — RDB (a point-in-time snapshot) and AOF (a log of every write), both optional and configurable
+- **Pub/Sub and Streams** — messaging tools built on top of the key-value core
+- **Redis Cluster** — built-in sharding across nodes using hash slots
+- **Pipelining** — batching many commands into one round trip to cut network overhead
 
 ## Core Knowledge
 
-- Single-threaded command execution means one slow command (a large `KEYS` scan, a huge sorted-set operation) blocks everything else — command choice and Big-O awareness matter more here than in multi-threaded engines
-- Persistence is opt-in and tunable: pure in-memory (fastest, data lost on crash), RDB snapshots (periodic, can lose recent writes), AOF (near-durable, higher write overhead) — pick based on how much loss is tolerable
-- Sorted sets (ranked, range-queryable) are Redis's signature structure, powering leaderboards, rate limiters, and priority queues that plain key-value can't express
-- Redis Cluster shards via hash slots automatically, but multi-key operations across slots are restricted unless keys are deliberately co-located (hash tags)
-- Pub/Sub is fire-and-forget with no persistence or replay — Streams exist specifically because Pub/Sub can't support durable, replayable messaging
-- Eviction under `maxmemory` follows configurable policies (LRU, LFU, random, or none) — misconfiguring this on a store expected to hold durable data silently loses writes
-- Replication is asynchronous by default (same tradeoff as generic database-replication) — a failover can lose the last few unreplicated writes
-- Using Redis as a primary store (not just a cache) requires deliberate persistence and replication configuration — the defaults are cache-oriented, not database-oriented
+- Single-threaded execution means one slow command (a huge `KEYS` scan, a giant sorted-set operation) blocks everything else — picking the right command and knowing its cost matters more here than in multi-threaded engines
+- Persistence is optional and tunable: pure in-memory (fastest, data lost on crash), RDB snapshots (periodic, can lose recent writes), AOF (near-safe, higher write cost) — pick based on how much loss you can accept
+- Sorted sets (ranked, searchable by range) are Redis's signature structure, powering leaderboards, rate limiters, and priority queues that a plain key-value store can't do
+- Redis Cluster shards data across hash slots on its own, but operations touching many keys across slots are limited unless keys are placed together on purpose (hash tags)
+- Pub/Sub is fire-and-forget with no saving or replay — Streams exist because Pub/Sub can't support messages that are saved and can be replayed
+- Eviction under `maxmemory` follows settable rules (LRU, LFU, random, or none) — getting this wrong on a store meant to hold important data quietly loses writes
+- Replication is async by default (the same tradeoff as regular database replication) — a failover can lose the last few writes that hadn't copied over yet
+- Using Redis as a main store (not just a cache) needs persistence and replication set up on purpose — the defaults are built for caching, not for being a database
 
 ## Interview Questions
 
 **Q:** Why does Redis's single-threaded model still perform well under load?
-**A:** Most operations are O(1)/O(log n) and in-memory, so single-threaded execution avoids locking overhead entirely — the risk is a single expensive command blocking the whole server.
+**A:** Most operations are fast and in-memory, so single-threaded execution avoids locking costs entirely — the risk is a single expensive command blocking the whole server.
 
-**Q:** RDB vs AOF — what's the practical tradeoff?
-**A:** RDB is a periodic snapshot (fast recovery, can lose recent writes); AOF logs every write (near-durable, larger files, more write overhead) — many setups combine both.
+**Q:** RDB vs AOF — what's the real tradeoff?
+**A:** RDB is a periodic snapshot (fast recovery, can lose recent writes); AOF logs every write (near-safe, bigger files, more write cost) — many setups use both together.
 
 **Q:** Why use Streams instead of Pub/Sub for messaging in Redis?
-**A:** Pub/Sub delivers only to currently-connected subscribers with no persistence; Streams persist messages and support replay and consumer groups.
+**A:** Pub/Sub only delivers to subscribers connected right now and saves nothing; Streams save messages and support replay and consumer groups.
 
-**Q:** What must change to use Redis safely as a primary datastore rather than a cache?
-**A:** Persistence (AOF) and eviction policy must be configured deliberately — cache-oriented defaults (volatile, eviction-happy) will silently drop data otherwise.
+**Q:** What must change to use Redis safely as a main datastore instead of a cache?
+**A:** Persistence (AOF) and the eviction rule must be set on purpose — cache-style defaults (quick to evict) will quietly drop data otherwise.
 
 ## Scenario
 
-A team builds a real-time leaderboard by re-querying and re-sorting scores from the primary database on every read, causing latency spikes under load. Moving scores into a Redis sorted set gives O(log n) rank updates and range queries natively, and the leaderboard reads directly from memory instead of re-computing rankings on every request.
+A team builds a real-time leaderboard by re-querying and re-sorting scores from the main database on every read, causing slow spikes under load. Moving scores into a Redis sorted set gives fast rank updates and range lookups straight from memory, so the leaderboard no longer needs to recompute rankings on every request.

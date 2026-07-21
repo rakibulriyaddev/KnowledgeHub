@@ -128,7 +128,7 @@ status: <confirmed status, draft or complete>
 ---
 ```
 
-**Body** — write a genuine, high-quality *overview* following the content standard in `CLAUDE.md` and the altitude rule below. The page is **section-wise**: use the fixed `##` sections below, in this order. Target reader: a 10+ year senior software engineer — assume fundamentals, focus on what actually matters at that level. Core information only, no deep explanations.
+**Body** — write a genuine, high-quality *overview* following the content standard in `KnowledgeVault/CLAUDE.md` (includes the simple-vocabulary rule) and the altitude rule below. The page is **section-wise**: use the fixed `##` sections below, in this order. Target reader: a 10+ year senior software engineer — assume fundamentals, focus on what actually matters at that level. Core information only, no deep explanations.
 
 ```markdown
 ## Overview
