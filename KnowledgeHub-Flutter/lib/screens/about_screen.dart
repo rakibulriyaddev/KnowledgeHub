@@ -17,6 +17,12 @@ class AboutScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Icon(
+                Icons.info_outline,
+                size: 64,
+                color: theme.colorScheme.primary.withValues(alpha: 0.35),
+              ),
+              const SizedBox(height: 16),
               Text('About', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               Text(

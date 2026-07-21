@@ -10,7 +10,10 @@ void main() {
     // won't advance on its own — run it through runAsync so it resolves.
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
     await tester.pump();
-    await tester.pump();
+    // Bounded pump (not pumpAndSettle) - the app has an infinite spinner
+    // elsewhere that would never let pumpAndSettle finish. 300ms covers the
+    // route's fade+slide entrance transition.
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Your knowledge, organized.'), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../data/topic_status_controller.dart';
@@ -23,6 +24,7 @@ class _ReadStatusBadgeState extends State<ReadStatusBadge> {
   bool _marking = false;
 
   Future<void> _toggle(bool currentlyRead) async {
+    HapticFeedback.lightImpact();
     final controller = context.read<TopicStatusController>();
     setState(() => _marking = true);
     try {
@@ -89,18 +91,25 @@ class _Pill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
             width: 6,
             height: 6,
             decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: isDark ? const Color(0xFFD4D4D4) : const Color(0xFF404040),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+            child: Text(
+              label,
+              key: ValueKey(label),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isDark ? const Color(0xFFD4D4D4) : const Color(0xFF404040),
+              ),
             ),
           ),
         ],

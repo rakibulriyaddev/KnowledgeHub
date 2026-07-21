@@ -36,10 +36,16 @@ class MetadataHeader extends StatelessWidget {
             spacing: 12,
             runSpacing: 8,
             children: [
-              Text(
-                frontmatter.title,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              Hero(
+                tag: 'topic-title-${frontmatter.id}',
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: Text(
+                    frontmatter.title,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
               ReadStatusBadge(topicId: frontmatter.id),

@@ -81,6 +81,7 @@ class MarkdownView extends StatelessWidget {
     if (uri.scheme == 'http' || uri.scheme == 'https') {
       return Image.network(
         uri.toString(),
+        frameBuilder: _fadeInFrameBuilder,
         errorBuilder: (context, error, stackTrace) => _imageFallback(alt),
       );
     }
@@ -89,11 +90,27 @@ class MarkdownView extends StatelessWidget {
     if (match != null) {
       return Image.asset(
         'assets/vault_images/${match.group(1)}/${match.group(2)}',
+        frameBuilder: _fadeInFrameBuilder,
         errorBuilder: (context, error, stackTrace) => _imageFallback(alt),
       );
     }
 
     return _imageFallback(alt);
+  }
+
+  static Widget _fadeInFrameBuilder(
+    BuildContext context,
+    Widget child,
+    int? frame,
+    bool wasSynchronouslyLoaded,
+  ) {
+    if (wasSynchronouslyLoaded) return child;
+    return AnimatedOpacity(
+      opacity: frame == null ? 0 : 1,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+      child: child,
+    );
   }
 
   Widget _imageFallback(String? alt) => Builder(

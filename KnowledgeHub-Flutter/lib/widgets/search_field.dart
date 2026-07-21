@@ -66,47 +66,57 @@ class _SearchFieldState extends State<SearchField> {
             ),
           ),
         ),
-        if (showDropdown)
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: theme.dividerColor),
-            ),
-            constraints: const BoxConstraints(maxHeight: 320),
-            child: _results.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'No topics match "${_controller.text.trim()}".',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    itemCount: _results.length,
-                    separatorBuilder: (_, _) => Divider(height: 1, color: theme.dividerColor),
-                    itemBuilder: (context, index) {
-                      final entry = _results[index];
-                      final isRead = context.watch<TopicStatusController>().isRead(entry.id);
-                      return ListTile(
-                        title: Text(entry.title),
-                        subtitle: entry.tags.isEmpty
-                            ? null
-                            : Wrap(
-                                spacing: 4,
-                                runSpacing: 4,
-                                children: [
-                                  for (final tag in entry.tags.take(4)) TagChip(tag: tag),
-                                ],
-                              ),
-                        trailing: ReadStatusDot(isRead: isRead),
-                        onTap: () => _onSelect(entry.id),
-                      );
-                    },
-                  ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (child, animation) => SizeTransition(
+            sizeFactor: animation,
+            axisAlignment: -1,
+            child: FadeTransition(opacity: animation, child: child),
           ),
+          child: !showDropdown
+              ? const SizedBox.shrink(key: ValueKey('empty'))
+              : Container(
+                  key: const ValueKey('dropdown'),
+                  margin: const EdgeInsets.only(top: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: theme.dividerColor),
+                  ),
+                  constraints: const BoxConstraints(maxHeight: 320),
+                  child: _results.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(
+                            'No topics match "${_controller.text.trim()}".',
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        )
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          itemCount: _results.length,
+                          separatorBuilder: (_, _) => Divider(height: 1, color: theme.dividerColor),
+                          itemBuilder: (context, index) {
+                            final entry = _results[index];
+                            final isRead = context.watch<TopicStatusController>().isRead(entry.id);
+                            return ListTile(
+                              title: Text(entry.title),
+                              subtitle: entry.tags.isEmpty
+                                  ? null
+                                  : Wrap(
+                                      spacing: 4,
+                                      runSpacing: 4,
+                                      children: [
+                                        for (final tag in entry.tags.take(4)) TagChip(tag: tag),
+                                      ],
+                                    ),
+                              trailing: ReadStatusDot(isRead: isRead),
+                              onTap: () => _onSelect(entry.id),
+                            );
+                          },
+                        ),
+                ),
+        ),
       ],
     );
   }
